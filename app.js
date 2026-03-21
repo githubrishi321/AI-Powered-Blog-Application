@@ -42,6 +42,7 @@ app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
 
 // Middleware
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(checkForAuthenticationCookie("token"));
@@ -64,8 +65,13 @@ app.get("/", async (req, res) => {
   }
 });
 
+app.get("/test-view", (req, res) => {
+  res.render("addBlog", { user: {} });
+});
+
 app.use("/user", userRoute);
 app.use("/blog", blogRoute);
+app.use("/ai", require("./routes/ai"));
 
 // 404 handler
 app.use((req, res) => {
