@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' — Admin' : 'Admin Panel' %> | Blogify</title>
+  <style>
+    :root {
+      --admin-sidebar-width: 250px;
+      --admin-primary: #6366f1;
+      --admin-dark: #1e1b4b;
+      --admin-darker: #13103a;
+      --admin-light: #f8fafc;
+    }
+
+    body { background: #f1f5f9; }
+
+    .admin-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+      width: var(--admin-sidebar-width);
+      background: linear-gradient(180deg, var(--admin-dark) 0%, var(--admin-darker) 100%);
+      color: #c7d2fe;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .admin-sidebar .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .admin-sidebar .sidebar-brand a {
+      text-decoration: none;
+      color: white;
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-sidebar .sidebar-brand .brand-badge {
+      background: var(--admin-primary);
+      color: white;
+      font-size: 0.6rem;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .admin-sidebar nav {
+      flex: 1;
+      padding: 16px 0;
+    }
+
+    .sidebar-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #818cf8;
+      padding: 16px 20px 6px;
+    }
+
+    .admin-sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      color: #c7d2fe;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+      border-radius: 0 8px 8px 0;
+      margin: 1px 8px 1px 0;
+    }
+
+    .admin-sidebar nav a:hover,
+    .admin-sidebar nav a.active {
+      background: rgba(99, 102, 241, 0.2);
+      color: white;
+      border-left-color: var(--admin-primary);
+    }
+
+    .admin-sidebar nav a i {
+      width: 18px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar-footer a {
+      color: #c7d2fe;
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      transition: color 0.2s;
+    }
+    .sidebar-footer a:hover { color: white; }
+
+    /* Main content */
+    .admin-main {
+      margin-left: var(--admin-sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .admin-topbar {
+      background: white;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-topbar .page-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin: 0;
+    }
+
+    .admin-topbar .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .admin-user-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+
+    .admin-user-badge img {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--admin-primary);
+    }
+
+    .admin-content {
+      padding: 28px;
+      flex: 1;
+    }
+
+    /* Cards */
+    .admin-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    .admin-card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .admin-card-header h5 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e1b4b;
+    }
+
+    .admin-card-body { padding: 24px; }
+
+    /* Stat cards */
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.indigo { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .stat-icon.green  { background: linear-gradient(135deg, #10b981, #059669); }
+    .stat-icon.blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .stat-icon.red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .stat-icon.teal   { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    .stat-icon.pink   { background: linear-gradient(135deg, #ec4899, #db2777); }
+
+    .stat-value { font-size: 1.75rem; font-weight: 800; color: #1e1b4b; line-height: 1; }
+    .stat-label { font-size: 0.82rem; color: #6b7280; font-weight: 500; margin-top: 4px; }
+
+    /* Tables */
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th {
+      padding: 12px 16px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6b7280;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    .admin-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #374151;
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    .admin-table tr:hover td { background: #fafafa; }
+
+    /* Badges */
+    .badge-admin   { background:#ede9fe; color:#6d28d9; }
+    .badge-user    { background:#dbeafe; color:#1e40af; }
+    .badge-active  { background:#d1fae5; color:#065f46; }
+    .badge-suspended { background:#fef3c7; color:#92400e; }
+    .badge-banned  { background:#fee2e2; color:#991b1b; }
+    .badge-published { background:#d1fae5; color:#065f46; }
+    .badge-hidden  { background:#fef3c7; color:#92400e; }
+    .badge-featured { background:#ede9fe; color:#5b21b6; }
+    .badge-success { background:#d1fae5; color:#065f46; }
+    .badge-error   { background:#fee2e2; color:#991b1b; }
+    .badge-blocked { background:#e5e7eb; color:#374151; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Mobile sidebar toggle */
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: #374151;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    @media (max-width: 768px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+      }
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+      .admin-main { margin-left: 0; }
+      .sidebar-toggle { display: block; }
+      .admin-content { padding: 16px; }
+    }
+
+    /* Flash messages */
+    .flash-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .flash-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Pagination */
+    .admin-pagination {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .admin-pagination a, .admin-pagination span {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      text-decoration: none;
+    }
+    .admin-pagination a { background: white; color: #374151; border: 1px solid #e2e8f0; transition: all 0.2s; }
+    .admin-pagination a:hover { background: #6366f1; color: white; border-color: #6366f1; }
+    .admin-pagination span.current { background: #6366f1; color: white; border: 1px solid #6366f1; }
+
+    /* Confirm modal */
+    .modal-confirm .modal-header { border-bottom: none; }
+    .modal-confirm .modal-footer { border-top: none; }
+  </style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <a href="/admin/dashboard">
+        <i class="fas fa-shield-alt"></i>
+        Blogify
+        <span class="brand-badge">Admin</span>
+      </a>
+    </div>
+
+    <nav>
+      <div class="sidebar-section-label">Overview</div>
+      <a href="/admin/dashboard" class="<%= locals.currentPage === 'dashboard' ? 'active' : '' %>">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+
+      <div class="sidebar-section-label">Content</div>
+      <a href="/admin/users" class="<%= locals.currentPage === 'users' ? 'active' : '' %>">
+        <i class="fas fa-users"></i> Users
+      </a>
+      <a href="/admin/blogs" class="<%= locals.currentPage === 'blogs' ? 'active' : '' %>">
+        <i class="fas fa-newspaper"></i> Blogs
+      </a>
+      <a href="/admin/comments" class="<%= locals.currentPage === 'comments' ? 'active' : '' %>">
+        <i class="fas fa-comments"></i> Comments
+      </a>
+
+      <div class="sidebar-section-label">Features</div>
+      <a href="/admin/ai" class="<%= locals.currentPage === 'ai' ? 'active' : '' %>">
+        <i class="fas fa-robot"></i> AI Control
+      </a>
+      <a href="/admin/settings" class="<%= locals.currentPage === 'settings' ? 'active' : '' %>">
+        <i class="fas fa-cog"></i> Site Settings
+      </a>
+
+      <div class="sidebar-section-label">Security</div>
+      <a href="/admin/login-activity" class="<%= locals.currentPage === 'loginActivity' ? 'active' : '' %>">
+        <i class="fas fa-sign-in-alt"></i> Login Activity
+      </a>
+      <a href="/admin/audit-log" class="<%= locals.currentPage === 'auditLog' ? 'active' : '' %>">
+        <i class="fas fa-history"></i> Audit Log
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/">
+        <i class="fas fa-external-link-alt"></i> View Site
+      </a>
+      <a href="/user/logout">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="page-title"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Admin Panel' %></h1>
+      </div>
+      <div class="topbar-right">
+        <div class="admin-user-badge">
+          <img src="<%= locals.user.profileImageURL %>" alt="" onerror="this.src='/Images/default.svg'" />
+          <div>
+            <div style="font-weight:600; font-size:0.85rem;"><%= locals.user.fullName %></div>
+            <div style="font-size:0.75rem; color:#818cf8;">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- Flash messages -->
+      <% if (locals.flash && locals.flash.success && locals.flash.success.length) { %>
+        <div class="flash-success">
+          <i class="fas fa-check-circle"></i>
+          <%= locals.flash.success[0] %>
+        </div>
+      <% } %>
+      <% if (locals.flash && locals.flash.error && locals.flash.error.length) { %>
+        <div class="flash-error">
+          <i class="fas fa-exclamation-circle"></i>
+          <%= locals.flash.error[0] %>
+        </div>
+      <% } %>
+
+      <!-- Page content injected here -->
+      <%- body %>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script>
+  // Close sidebar on outside click (mobile)
+  document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('adminSidebar');
+    const toggle = document.querySelector('.sidebar-toggle');
+    if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+      sidebar.classList.remove('open');
+    }
+  });
+</script>
+</body>
+</html>
+

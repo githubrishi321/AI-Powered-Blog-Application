@@ -9,26 +9,28 @@ if (!secret) {
   );
 }
 
-function createTokenForUser(user){
+function createTokenForUser(user) {
   const payload = {
     _id: user._id,
     email: user.email,
     fullName: user.fullName,
     profileImageURL: user.profileImageURL,
     role: user.role,
+    // Include tokenVersion so we can invalidate sessions server-side
+    tokenVersion: user.tokenVersion || 0,
   };
   const token = JWT.sign(payload, secret, {
-    expiresIn: "7d" // Token expires in 7 days
-  }); 
+    expiresIn: "7d", // Token expires in 7 days
+  });
   return token;
 }
 
-function validateToken(token){
-  const payload = JWT.verify(token , secret);
+function validateToken(token) {
+  const payload = JWT.verify(token, secret);
   return payload;
 }
 
 module.exports = {
   createTokenForUser,
   validateToken,
-}
+};

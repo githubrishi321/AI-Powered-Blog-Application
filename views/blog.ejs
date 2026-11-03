@@ -425,12 +425,12 @@
             </div>
 
             <!-- Blog Cover Image -->
-            <% if (blog.coverImageURL) { %>
+            <% const resolvedCover = resolveCoverUrl(blog); %>
+            <% if (resolvedCover && !resolvedCover.includes('blog-placeholder.svg')) { %>
               <div class="blog-cover-container">
-                <img src="<%= blog.coverImageURL %>" alt="<%= blog.title %>"
-                  onerror="this.parentElement.style.display='none';" />
+                <img src="<%= resolvedCover %>" alt="<%= blog.title %>" class="blog-cover" loading="lazy" />
               </div>
-              <% } %>
+            <% } %>
 
                 <!-- Blog Content -->
                 <div class="blog-body">
@@ -498,6 +498,7 @@
                         </div>
                       </div>
                       <form action="/blog/comment/<%= blog._id %>" method="post">
+              <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                         <div class="mb-3">
                           <textarea name="content" class="form-control"
                             placeholder="What do you think about this article?" rows="4" required

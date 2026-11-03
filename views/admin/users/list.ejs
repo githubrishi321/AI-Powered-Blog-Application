@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Users | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'users' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Users' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0">All Users</h4>
+          <small class="text-muted"><%= total %> user<%= total !== 1 ? 's' : '' %> found</small>
+        </div>
+        <a href="/admin/users/create" class="btn btn-primary">
+          <i class="fas fa-user-plus me-2"></i>Create User
+        </a>
+      </div>
+
+      <!-- Filters -->
+      <div class="admin-card mb-4">
+        <div class="admin-card-body">
+          <form method="GET" action="/admin/users" class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold">Search</label>
+              <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Name or email..."
+                value="<%= query.search || '' %>"
+              >
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label small fw-semibold">Role</label>
+              <select name="role" class="form-select">
+                <option value="" <%= !query.role ? 'selected' : '' %>>All Roles</option>
+                <option value="USER"  <%= query.role === 'USER'  ? 'selected' : '' %>>User</option>
+                <option value="ADMIN" <%= query.role === 'ADMIN' ? 'selected' : '' %>>Admin</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label small fw-semibold">Status</label>
+              <select name="status" class="form-select">
+                <option value=""          <%= !query.status                 ? 'selected' : '' %>>All Status</option>
+                <option value="active"    <%= query.status === 'active'    ? 'selected' : '' %>>Active</option>
+                <option value="suspended" <%= query.status === 'suspended' ? 'selected' : '' %>>Suspended</option>
+                <option value="banned"    <%= query.status === 'banned'    ? 'selected' : '' %>>Banned</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label small fw-semibold">Sort</label>
+              <select name="sort" class="form-select">
+                <option value="newest" <%= query.sort === 'newest' || !query.sort ? 'selected' : '' %>>Newest</option>
+                <option value="oldest" <%= query.sort === 'oldest' ? 'selected' : '' %>>Oldest</option>
+                <option value="name"   <%= query.sort === 'name'   ? 'selected' : '' %>>Name</option>
+                <option value="email"  <%= query.sort === 'email'  ? 'selected' : '' %>>Email</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2 d-flex gap-2">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-1"></i>Filter
+              </button>
+              <a href="/admin/users" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="admin-card">
+        <div class="admin-card-body p-0">
+          <% if (users.length === 0) { %>
+            <div class="text-center py-5">
+              <i class="fas fa-users fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No users found</h5>
+              <p class="text-muted mb-3">Try adjusting your filters or create a new user.</p>
+              <a href="/admin/users/create" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>Create User
+              </a>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="admin-table table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Name / Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Blogs</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% users.forEach(function(u) { %>
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <% if (u.profileImageURL) { %>
+                            <img
+                              src="<%= u.profileImageURL %>"
+                              alt="<%= u.fullName %>"
+                              class="rounded-circle"
+                              width="36"
+                              height="36"
+                              style="object-fit:cover;"
+                            >
+                          <% } else { %>
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
+                                 style="width:36px;height:36px;font-size:14px;">
+                              <%= u.fullName ? u.fullName.charAt(0).toUpperCase() : '?' %>
+                            </div>
+                          <% } %>
+                          <div>
+                            <div class="fw-semibold"><%= u.fullName %></div>
+                            <small class="text-muted"><%= u.email %></small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <% if (u.role === 'ADMIN') { %>
+                          <span class="badge badge-admin">Admin</span>
+                        <% } else { %>
+                          <span class="badge badge-user">User</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (u.status === 'active') { %>
+                          <span class="badge badge-active">Active</span>
+                        <% } else if (u.status === 'suspended') { %>
+                          <span class="badge badge-suspended">Suspended</span>
+                        <% } else if (u.status === 'banned') { %>
+                          <span class="badge badge-banned">Banned</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary"><%= u.status %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <small><%= u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—' %></small>
+                      </td>
+                      <td>—</td>
+                      <td>
+                        <div class="d-flex gap-2">
+                          <a
+                            href="/admin/users/<%= u._id %>"
+                            class="btn btn-sm btn-outline-primary"
+                            title="View"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <a
+                            href="/admin/users/<%= u._id %>/edit"
+                            class="btn btn-sm btn-outline-secondary"
+                            title="Edit"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </a>
+                          <% if (String(locals.user._id) !== String(u._id)) { %>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-outline-danger btn-delete-trigger"
+                              data-url="/admin/users/<%= u._id %>/delete"
+                              data-item-name="<%= u.fullName %> (<%= u.email %>)"
+                              data-item-type="user"
+                              title="Delete User"
+                            >
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          <% } %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (pages > 1) { %>
+              <div class="admin-pagination p-3">
+                <% if (page > 1) { %>
+                  <a href="?page=<%= page - 1 %>&search=<%= query.search || '' %>&role=<%= query.role || '' %>&status=<%= query.status || '' %>&sort=<%= query.sort || '' %>">
+                    <i class="fas fa-chevron-left me-1"></i>Prev
+                  </a>
+                <% } %>
+                <% for (let i = 1; i <= pages; i++) { %>
+                  <% if (i === page) { %>
+                    <span class="current"><%= i %></span>
+                  <% } else { %>
+                    <a href="?page=<%= i %>&search=<%= query.search || '' %>&role=<%= query.role || '' %>&status=<%= query.status || '' %>&sort=<%= query.sort || '' %>">
+                      <%= i %>
+                    </a>
+                  <% } %>
+                <% } %>
+                <% if (page < pages) { %>
+                  <a href="?page=<%= page + 1 %>&search=<%= query.search || '' %>&role=<%= query.role || '' %>&status=<%= query.status || '' %>&sort=<%= query.sort || '' %>">
+                    Next<i class="fas fa-chevron-right ms-1"></i>
+                  </a>
+                <% } %>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<div class="admin-topbar">
+  <div class="d-flex align-items-center gap-3">
+    <button class="sidebar-toggle" id="sidebarToggleBtn" type="button" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h1 class="page-title"><%= pageTitle %></h1>
+  </div>
+  <div class="topbar-right">
+    <div class="admin-user-badge">
+      <img src="<%= locals.user ? locals.user.profileImageURL : '/Images/default.svg' %>" alt="Admin Avatar" class="admin-avatar" onerror="this.src='/Images/default.svg'" />
+      <div>
+        <div class="user-name"><%= locals.user ? locals.user.fullName : 'Admin' %></div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reusable Admin Confirmation Modal -->
+<div class="modal fade" id="adminConfirmModal" tabindex="-1" aria-labelledby="adminConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="adminConfirmModalLabel">
+          <i class="fas fa-trash me-2"></i>Confirm Deletion
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="adminConfirmForm" method="POST" action="">
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <div class="modal-body py-4" id="adminConfirmModalBody">
+          Are you sure you want to permanently delete this item?
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger" id="adminConfirmSubmitBtn">
+            <i class="fas fa-trash me-2"></i>Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.CSRF_TOKEN = "<%= locals.csrfToken || '' %>";
+</script>

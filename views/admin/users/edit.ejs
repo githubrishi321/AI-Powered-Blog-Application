@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Edit User | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'users' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Edit User' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+          <div class="admin-card">
+            <div class="admin-card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">
+                <i class="fas fa-user-edit me-2"></i>Edit: <%= target.fullName %>
+              </h6>
+              <a href="/admin/users/<%= target._id %>" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Profile
+              </a>
+            </div>
+            <div class="admin-card-body">
+
+              <!-- Validation Errors -->
+              <% if (locals.errors && locals.errors.length > 0) { %>
+                <div class="alert alert-danger flash-error">
+                  <ul class="mb-0 ps-3">
+                    <% errors.forEach(function(err) { %>
+                      <li><%= err.msg %></li>
+                    <% }) %>
+                  </ul>
+                </div>
+              <% } %>
+
+              <form
+                method="POST"
+                action="/admin/users/<%= target._id %>/edit"
+                enctype="multipart/form-data"
+                novalidate
+              >
+                <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                <div class="row g-4">
+                  <!-- Left: form fields -->
+                  <div class="col-12 col-md-8">
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                      <label for="fullName" class="form-label fw-semibold">
+                        Full Name <span class="text-danger">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        class="form-control"
+                        value="<%= target.fullName %>"
+                        required
+                      >
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                      <label for="email" class="form-label fw-semibold">
+                        Email Address <span class="text-danger">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        value="<%= target.email %>"
+                        required
+                      >
+                    </div>
+
+                    <!-- Role -->
+                    <div class="mb-3">
+                      <label for="role" class="form-label fw-semibold">Role</label>
+                      <select id="role" name="role" class="form-select">
+                        <option value="USER"  <%= target.role === 'USER'  ? 'selected' : '' %>>User</option>
+                        <option value="ADMIN" <%= target.role === 'ADMIN' ? 'selected' : '' %>>Admin</option>
+                      </select>
+                      <div class="form-text text-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Assigning Admin role grants full dashboard access.
+                      </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                      <label for="status" class="form-label fw-semibold">Status</label>
+                      <select id="status" name="status" class="form-select">
+                        <option value="active"    <%= target.status === 'active'    ? 'selected' : '' %>>Active</option>
+                        <option value="suspended" <%= target.status === 'suspended' ? 'selected' : '' %>>Suspended</option>
+                        <option value="banned"    <%= target.status === 'banned'    ? 'selected' : '' %>>Banned</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Right: profile image -->
+                  <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold d-block">Profile Image</label>
+
+                    <!-- Current image preview -->
+                    <% if (target.profileImageURL) { %>
+                      <div class="mb-2 text-center">
+                        <img
+                          id="profilePreview"
+                          src="<%= target.profileImageURL %>"
+                          alt="Current profile image"
+                          class="rounded-circle border"
+                          width="80"
+                          height="80"
+                          style="object-fit:cover;"
+                        >
+                        <p class="small text-muted mt-1 mb-0">Current image</p>
+                      </div>
+                    <% } else { %>
+                      <div class="mb-2 text-center">
+                        <div
+                          id="profilePreview"
+                          class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto"
+                          style="width:80px;height:80px;font-size:28px;"
+                        >
+                          <%= target.fullName ? target.fullName.charAt(0).toUpperCase() : '?' %>
+                        </div>
+                        <p class="small text-muted mt-1 mb-0">No image</p>
+                      </div>
+                    <% } %>
+
+                    <!-- Upload new -->
+                    <div class="mb-2">
+                      <label for="profileImage" class="form-label small">Upload New Image</label>
+                      <input
+                        type="file"
+                        id="profileImage"
+                        name="profileImage"
+                        class="form-control form-control-sm"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                      >
+                      <div class="form-text">JPG, PNG, GIF, WebP</div>
+                    </div>
+
+                    <!-- Remove -->
+                    <% if (target.profileImageURL) { %>
+                      <div class="form-check mt-2">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="removeProfileImage"
+                          name="removeProfileImage"
+                          value="1"
+                        >
+                        <label class="form-check-label text-danger small" for="removeProfileImage">
+                          Remove profile image
+                        </label>
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="d-flex gap-3">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                  </button>
+                  <a href="/admin/users/<%= target._id %>" class="btn btn-outline-secondary">
+                    Cancel
+                  </a>
+                </div>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

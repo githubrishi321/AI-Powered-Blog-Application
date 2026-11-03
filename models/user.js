@@ -30,6 +30,36 @@ const userSchema = new mongoose.Schema(
       enum: ["USER", "ADMIN"],
       default: "USER",
     },
+    // Account status: active | suspended | banned
+    status: {
+      type: String,
+      enum: ["active", "suspended", "banned"],
+      default: "active",
+    },
+    // Token version — bump to invalidate all existing sessions
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+    // Login tracking
+    lastLoginAt: {
+      type: Date,
+    },
+    loginCount: {
+      type: Number,
+      default: 0,
+    },
+    lastLoginIP: {
+      type: String,
+    },
+    // Lockout after N failed attempts
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockUntil: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
@@ -40,7 +70,7 @@ userSchema.pre("save", function (next) {
   if (!user.isModified("password")) {
     return next();
   }
-  
+
   // Use environment variable for salt, fallback to a default for backward compatibility
   // In production, always set PASSWORD_SALT in environment variables
   const salt = process.env.PASSWORD_SALT || "secretKey";
@@ -67,6 +97,20 @@ userSchema.static(
     const user = await this.findOne({ email });
     if (!user) throw new Error("User not Found");
 
+    // Check if account is locked
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      const minutesLeft = Math.ceil((user.lockUntil - Date.now()) / 60000);
+      throw new Error(`Account locked. Try again in ${minutesLeft} minute(s).`);
+    }
+
+    // Check account status
+    if (user.status === "banned") {
+      throw new Error("Your account has been banned. Please contact support.");
+    }
+    if (user.status === "suspended") {
+      throw new Error("Your account is suspended. Please contact support.");
+    }
+
     // signup karte waqt user ka salt and ActualHashedPassword.
     const salt = user.salt;
     const hashedPassword = user.password;
@@ -77,8 +121,24 @@ userSchema.static(
       .update(password)
       .digest("hex");
 
-    if (userProvidePassword !== hashedPassword)
+    if (userProvidePassword !== hashedPassword) {
+      // Increment failed attempts
+      const MAX_ATTEMPTS = parseInt(process.env.MAX_LOGIN_ATTEMPTS || "5");
+      const LOCK_DURATION_MS = parseInt(process.env.LOCK_DURATION_MINUTES || "15") * 60 * 1000;
+
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      if (user.failedLoginAttempts >= MAX_ATTEMPTS) {
+        user.lockUntil = new Date(Date.now() + LOCK_DURATION_MS);
+        user.failedLoginAttempts = 0;
+      }
+      await user.save();
       throw new Error("Incorrect Password");
+    }
+
+    // Reset failed attempts on success
+    user.failedLoginAttempts = 0;
+    user.lockUntil = undefined;
+    await user.save();
 
     const token = createTokenForUser(user);
     return token;

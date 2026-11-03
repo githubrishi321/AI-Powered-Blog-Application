@@ -49,6 +49,7 @@
             <div class="card">
               <div class="card-body p-4">
                 <form action="/blog" method="POST" enctype="multipart/form-data">
+              <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                   <div class="mb-4">
                     <label for="coverImage" class="form-label">
                       <i class="fas fa-image me-2"></i>Cover Image
@@ -58,12 +59,12 @@
                       class="form-control"
                       id="coverImage"
                       name="coverImage"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
                       aria-describedby="coverImage"
                     />
                     <div class="form-text">
                       <i class="fas fa-info-circle me-1"></i>
-                      Choose an image to make your blog more engaging (optional)
+                      Choose an image (JPEG, PNG, WebP, GIF - max 5MB) to make your blog more engaging (optional)
                     </div>
                   </div>
                   

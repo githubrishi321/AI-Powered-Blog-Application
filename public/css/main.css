@@ -1,0 +1,289 @@
+/* ==========================================================================
+   BLOGIFY MAIN APPLICATION STYLESHEET
+   Navbar, Dropdown Menus, Stacking Context, and Global Components
+   ========================================================================== */
+
+/* 1. Navbar Stacking Context & Layout */
+.navbar {
+  position: relative !important;
+  z-index: 1030 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  margin: 10px 0;
+  padding: 0.5rem 1rem;
+}
+
+/* Ensure navbar brand has proper alignment */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 2. Main Content Wrapper Stacking Order (Stays below navbar) */
+.main-content {
+  position: relative !important;
+  z-index: 1 !important;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+  padding: 30px;
+}
+
+/* 3. User Dropdown Menu (Paints above content) */
+.navbar .dropdown-menu {
+  position: absolute !important;
+  z-index: 1050 !important;
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06) !important;
+  padding: 8px !important;
+  margin-top: 8px !important;
+  min-width: 200px;
+}
+
+/* 4. Dropdown Items with High Contrast & Hover State */
+.navbar .dropdown-item {
+  color: #1e293b !important;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  background: transparent;
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background-color: #f1f5f9 !important;
+  color: #6366f1 !important;
+  transform: none !important;
+}
+
+.navbar .dropdown-divider {
+  border-color: #f1f5f9 !important;
+  margin: 6px 0 !important;
+  opacity: 1;
+}
+
+/* 5. Navbar Helper Classes */
+.nav-admin-link {
+  color: #6366f1 !important;
+  font-weight: 700 !important;
+}
+
+.nav-avatar {
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+}
+
+/* 6. Mobile Responsiveness (< 768px and < 576px) */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  .navbar .dropdown-menu {
+    position: static !important;
+    box-shadow: none !important;
+    border: 1px solid #f1f5f9 !important;
+    background-color: #f8fafc !important;
+    margin-top: 6px !important;
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   7. Form Fields & Auth Pages Layout (Signup & Signin)
+   ========================================================================== */
+
+.field-group {
+  margin-bottom: 22px;
+}
+
+.field {
+  position: relative;
+  width: 100%;
+}
+
+.field input {
+  width: 100%;
+  height: 52px;
+  line-height: normal;
+  padding: 0 44px; /* 44px left for icon, 44px right for toggle */
+  font-size: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #1f2937;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+  display: block;
+}
+
+.field input:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  outline: none;
+}
+
+/* Floating label anchored to .field */
+.field label {
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  background: #ffffff;
+  padding: 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  z-index: 2;
+  border-radius: 4px;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.field input:focus ~ label {
+  color: #6366f1;
+}
+
+/* Left input icon centered at left: 14px */
+.field .input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+  transition: color 0.2s ease;
+}
+
+.field input:focus ~ .input-icon {
+  color: #6366f1;
+}
+
+/* Right toggle-password button centered at right: 12px */
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  z-index: 2;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.toggle-password:hover {
+  color: #6366f1;
+  background-color: rgba(99, 102, 241, 0.08);
+}
+
+.toggle-password:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  color: #6366f1;
+}
+
+/* Password Strength Bar (Outside .field) */
+.password-strength {
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.password-strength-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-weak {
+  width: 33%;
+  background: #ef4444;
+}
+
+.strength-medium {
+  width: 66%;
+  background: #f59e0b;
+}
+
+.strength-strong {
+  width: 100%;
+  background: #10b981;
+}
+
+/* Form hint (Outside .field) */
+.form-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin-top: 6px;
+  padding-left: 4px;
+}
+
+.form-hint i {
+  color: #06b6d4;
+  font-size: 0.85rem;
+}
+
+/* Mobile Responsiveness for auth fields */
+@media (max-width: 576px) {
+  .field input {
+    height: 48px;
+    font-size: 0.95rem;
+    padding: 0 40px;
+  }
+  .field .input-icon {
+    left: 12px;
+    font-size: 0.9rem;
+  }
+  .toggle-password {
+    right: 8px;
+    width: 30px;
+    height: 30px;
+  }
+  .field label {
+    font-size: 0.8rem;
+    left: 12px;
+  }
+}
+

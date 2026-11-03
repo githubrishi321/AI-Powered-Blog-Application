@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>User Detail | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'users' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'User Detail' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <!-- Temp Password Alert -->
+      <% if (locals.passwordReset && locals.tempPassword) { %>
+        <div class="alert alert-warning border border-warning-subtle shadow-sm mb-4" role="alert">
+          <div class="d-flex align-items-start gap-3">
+            <i class="fas fa-key fa-lg mt-1 text-warning"></i>
+            <div class="flex-grow-1">
+              <h6 class="fw-bold mb-1">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                Temporary Password — Shown Only Once
+              </h6>
+              <p class="mb-2 text-muted small">Share this password with the user and ask them to change it immediately.</p>
+              <div class="d-flex align-items-center gap-2">
+                <input type="hidden" id="tempPasswordField" value="<%= tempPassword %>">
+                <code id="tempPasswordDisplay" class="fs-5 px-3 py-1 bg-white border rounded"><%= tempPassword %></code>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-warning"
+                  id="copyTempPasswordBtn"
+                >
+                  <i class="fas fa-copy me-1"></i>Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } else if (locals.passwordReset && !locals.tempPassword) { %>
+        <div class="alert alert-success mb-4">
+          <i class="fas fa-check-circle me-2"></i>
+          Password was reset successfully.
+        </div>
+      <% } %>
+
+      <div class="row g-4">
+        <!-- Left column: Profile -->
+        <div class="col-12 col-lg-4">
+          <div class="admin-card text-center">
+            <div class="admin-card-body">
+              <% if (target.profileImageURL) { %>
+                <img
+                  src="<%= target.profileImageURL %>"
+                  alt="<%= target.fullName %>"
+                  class="rounded-circle mb-3 border"
+                  width="100"
+                  height="100"
+                  style="object-fit:cover;"
+                >
+              <% } else { %>
+                <div
+                  class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto mb-3"
+                  style="width:100px;height:100px;font-size:36px;"
+                >
+                  <%= target.fullName ? target.fullName.charAt(0).toUpperCase() : '?' %>
+                </div>
+              <% } %>
+
+              <h5 class="fw-bold mb-1"><%= target.fullName %></h5>
+              <p class="text-muted small mb-3"><%= target.email %></p>
+
+              <div class="d-flex gap-2 justify-content-center mb-3">
+                <% if (target.role === 'ADMIN') { %>
+                  <span class="badge badge-admin">Admin</span>
+                <% } else { %>
+                  <span class="badge badge-user">User</span>
+                <% } %>
+                <% if (target.status === 'active') { %>
+                  <span class="badge badge-active">Active</span>
+                <% } else if (target.status === 'suspended') { %>
+                  <span class="badge badge-suspended">Suspended</span>
+                <% } else if (target.status === 'banned') { %>
+                  <span class="badge badge-banned">Banned</span>
+                <% } else { %>
+                  <span class="badge bg-secondary"><%= target.status %></span>
+                <% } %>
+              </div>
+
+              <!-- Stats -->
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <div class="p-2 bg-light rounded text-center">
+                    <div class="fw-bold fs-5"><%= blogCount || 0 %></div>
+                    <small class="text-muted">Blogs</small>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="p-2 bg-light rounded text-center">
+                    <div class="fw-bold fs-5"><%= commentCount || 0 %></div>
+                    <small class="text-muted">Comments</small>
+                  </div>
+                </div>
+              </div>
+
+              <a href="/admin/users" class="btn btn-outline-secondary btn-sm w-100">
+                <i class="fas fa-arrow-left me-2"></i>Back to Users
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column: Details + Actions -->
+        <div class="col-12 col-lg-8">
+          <!-- Account Details -->
+          <div class="admin-card mb-4">
+            <div class="admin-card-header">
+              <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Account Details</h6>
+            </div>
+            <div class="admin-card-body">
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="small text-muted fw-semibold d-block">Joined</label>
+                  <span><%= target.createdAt ? new Date(target.createdAt).toLocaleString() : '—' %></span>
+                </div>
+                <div class="col-6">
+                  <label class="small text-muted fw-semibold d-block">Last Login</label>
+                  <span><%= target.lastLoginAt ? new Date(target.lastLoginAt).toLocaleString() : 'Never' %></span>
+                </div>
+                <div class="col-6">
+                  <label class="small text-muted fw-semibold d-block">Login Count</label>
+                  <span><%= target.loginCount || 0 %></span>
+                </div>
+                <div class="col-6">
+                  <label class="small text-muted fw-semibold d-block">Last Login IP</label>
+                  <span><%= target.lastLoginIP || '—' %></span>
+                </div>
+                <div class="col-6">
+                  <label class="small text-muted fw-semibold d-block">Failed Login Attempts</label>
+                  <span><%= target.failedLoginAttempts || 0 %></span>
+                </div>
+                <div class="col-6">
+                  <label class="small text-muted fw-semibold d-block">Account Locked Until</label>
+                  <% if (target.lockUntil && new Date(target.lockUntil) > new Date()) { %>
+                    <span class="text-danger fw-semibold"><%= new Date(target.lockUntil).toLocaleString() %></span>
+                  <% } else { %>
+                    <span class="text-success">Not locked</span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Actions</h6>
+            </div>
+            <div class="admin-card-body">
+              <div class="d-flex flex-wrap gap-2 mb-4">
+                <!-- Edit -->
+                <a href="/admin/users/<%= target._id %>/edit" class="btn btn-primary">
+                  <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+
+                <!-- Force Logout -->
+                <form method="POST" action="/admin/users/<%= target._id %>/force-logout" class="d-inline">
+                  <button
+                    type="button"
+                    class="btn btn-warning"
+                    data-bs-toggle="modal"
+                    data-bs-target="#forceLogoutModal"
+                  >
+                    <i class="fas fa-sign-out-alt me-2"></i>Force Logout
+                  </button>
+                </form>
+
+                <!-- Unlock -->
+                <% if (target.lockUntil && new Date(target.lockUntil) > new Date()) { %>
+                  <form method="POST" action="/admin/users/<%= target._id %>/unlock" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                      <i class="fas fa-unlock me-2"></i>Unlock Account
+                    </button>
+                  </form>
+                <% } %>
+
+                <!-- Delete -->
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteUserModal"
+                >
+                  <i class="fas fa-trash me-2"></i>Delete User
+                </button>
+              </div>
+
+              <!-- Reset Password Section -->
+              <div class="border rounded p-3">
+                <h6 class="fw-semibold mb-3">
+                  <i class="fas fa-key me-2"></i>Reset Password
+                </h6>
+                <form method="POST" action="/admin/users/<%= target._id %>/reset-password">
+                  <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold">
+                      New Password
+                      <span class="text-muted fw-normal">(leave blank to auto-generate)</span>
+                    </label>
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        name="newPassword"
+                        id="newPasswordField"
+                        class="form-control"
+                        placeholder="Enter new password or leave blank..."
+                        autocomplete="new-password"
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        id="generateRandomPasswordBtn"
+                        title="Generate Random Password"
+                      >
+                        <i class="fas fa-dice me-1"></i>Generate
+                      </button>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-outline-danger">
+                    <i class="fas fa-key me-2"></i>Reset Password
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Force Logout Modal -->
+      <div class="modal fade" id="forceLogoutModal" tabindex="-1" aria-labelledby="forceLogoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="forceLogoutModalLabel">Force Logout</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Are you sure you want to force logout <strong><%= target.fullName %></strong>?</p>
+              <p class="text-muted small">This will invalidate all active sessions for this user.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <form method="POST" action="/admin/users/<%= target._id %>/force-logout">
+                <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                <button type="submit" class="btn btn-warning">
+                  <i class="fas fa-sign-out-alt me-2"></i>Force Logout
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete User Modal -->
+      <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title" id="deleteUserModalLabel">
+                <i class="fas fa-trash me-2"></i>Delete User
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/admin/users/<%= target._id %>/delete">
+              <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+              <div class="modal-body">
+                <div class="alert alert-danger">
+                  <i class="fas fa-exclamation-triangle me-2"></i>
+                  This action is <strong>irreversible</strong>. You are about to delete
+                  <strong><%= target.fullName %></strong> (<%= target.email %>).
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">What should happen to this user's content?</label>
+                  <div class="form-check mb-2">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="contentAction"
+                      id="deleteContent"
+                      value="delete"
+                      checked
+                    >
+                    <label class="form-check-label" for="deleteContent">
+                      <strong>Delete all content</strong>
+                      <small class="d-block text-muted">Permanently removes all blogs and comments by this user.</small>
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="contentAction"
+                      id="reassignContent"
+                      value="reassign"
+                    >
+                    <label class="form-check-label" for="reassignContent">
+                      <strong>Reassign content to another user</strong>
+                      <small class="d-block text-muted">Enter the User ID of the user to receive this content.</small>
+                    </label>
+                  </div>
+                  <div id="reassignField" class="mt-2 ps-4 d-none">
+                    <input
+                      type="text"
+                      name="reassignTo"
+                      class="form-control"
+                      placeholder="Enter target User ID..."
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger">
+                  <i class="fas fa-trash me-2"></i>Delete User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

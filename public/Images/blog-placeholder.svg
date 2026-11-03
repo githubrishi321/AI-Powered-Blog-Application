@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#e0e7ff" stop-opacity="0.7" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bgGradient)" />
+  <g opacity="0.12">
+    <circle cx="700" cy="80" r="140" fill="#ffffff" />
+    <circle cx="100" cy="380" r="180" fill="#ffffff" />
+    <path d="M0,350 Q200,300 400,380 T800,320 L800,450 L0,450 Z" fill="#ffffff" />
+  </g>
+  <g transform="translate(400, 190)">
+    <!-- Decorative Document / Image Icon -->
+    <rect x="-60" y="-70" width="120" height="95" rx="12" fill="none" stroke="url(#iconGradient)" stroke-width="6" />
+    <circle cx="-25" cy="-35" r="12" fill="url(#iconGradient)" />
+    <path d="M-50,15 L-15,-20 L15,10 L30,-5 L50,15 Z" fill="url(#iconGradient)" />
+    <!-- Text -->
+    <text x="0" y="70" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600" fill="#ffffff" letter-spacing="0.5">
+      No Cover Image
+    </text>
+    <text x="0" y="95" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="400" fill="#c7d2fe" letter-spacing="1">
+      BLOGIFY
+    </text>
+  </g>
+</svg>
+

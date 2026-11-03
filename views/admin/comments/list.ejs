@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Comments | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'comments' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Comments' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0">All Comments</h4>
+          <small class="text-muted"><%= total %> comment<%= total !== 1 ? 's' : '' %> found</small>
+        </div>
+      </div>
+
+      <!-- Search Filter -->
+      <div class="admin-card mb-4">
+        <div class="admin-card-body">
+          <form method="GET" action="/admin/comments" class="row g-3 align-items-end">
+            <div class="col-12 col-md-8">
+              <label class="form-label small fw-semibold">Search in Content</label>
+              <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Search comment text..."
+                value="<%= query.search || '' %>"
+              >
+            </div>
+            <div class="col-6 col-md-2">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-1"></i>Filter
+              </button>
+            </div>
+            <div class="col-6 col-md-2">
+              <a href="/admin/comments" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-times me-1"></i>Clear
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bulk Delete + Table -->
+      <div class="admin-card">
+        <div class="admin-card-body p-0">
+          <% if (comments.length === 0) { %>
+            <div class="text-center py-5">
+              <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No comments found</h5>
+              <p class="text-muted">Try adjusting your search.</p>
+            </div>
+          <% } else { %>
+            <form method="POST" action="/admin/comments/bulk" id="bulkCommentForm">
+              <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+              <!-- Bulk Action Bar -->
+              <div class="d-flex align-items-center gap-3 p-3 border-bottom">
+                <div class="form-check mb-0">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="selectAllComments"
+                    title="Select all"
+                  >
+                  <label class="form-check-label small" for="selectAllComments">Select all</label>
+                </div>
+                <input type="hidden" name="action" value="delete">
+                <button
+                  type="submit"
+                  class="btn btn-sm btn-outline-danger btn-bulk-apply"
+                >
+                  <i class="fas fa-trash me-1"></i>Delete Selected
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="admin-table table table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th width="40"></th>
+                      <th>Content</th>
+                      <th>Author</th>
+                      <th>Blog</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% comments.forEach(function(c) { %>
+                      <tr>
+                        <td>
+                          <div class="form-check mb-0">
+                            <input
+                              class="form-check-input comment-checkbox"
+                              type="checkbox"
+                              name="ids"
+                              value="<%= c._id %>"
+                            >
+                          </div>
+                        </td>
+                        <td>
+                          <span class="text-break">
+                            <% if (c.content && c.content.length > 80) { %>
+                              <%= c.content.substring(0, 80) %>…
+                            <% } else { %>
+                              <%= c.content || '(empty)' %>
+                            <% } %>
+                          </span>
+                        </td>
+                        <td>
+                          <% if (c.createdBy) { %>
+                            <div class="small fw-semibold"><%= c.createdBy.fullName || '—' %></div>
+                            <small class="text-muted"><%= c.createdBy.email || '' %></small>
+                          <% } else { %>
+                            <span class="text-muted small">Anonymous</span>
+                          <% } %>
+                        </td>
+                        <td>
+                          <% if (c.blogId) { %>
+                            <div class="small"><%= c.blogId.title ? c.blogId.title.substring(0, 40) : '—' %><%= c.blogId.title && c.blogId.title.length > 40 ? '…' : '' %></div>
+                          <% } else { %>
+                            <span class="text-muted small">—</span>
+                          <% } %>
+                        </td>
+                        <td>
+                          <small><%= c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—' %></small>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger btn-delete-trigger"
+                            data-url="/admin/comments/<%= c._id %>/delete"
+                            data-item-name="Comment: &quot;<%= c.content ? c.content.substring(0, 40).replace(/"/g, '&quot;') : '(empty)' %>...&quot;"
+                            data-item-type="comment"
+                            title="Delete"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </form>
+
+            <!-- Pagination -->
+            <% if (pages > 1) { %>
+              <div class="admin-pagination p-3">
+                <% if (page > 1) { %>
+                  <a href="?page=<%= page - 1 %>&search=<%= query.search || '' %>">
+                    <i class="fas fa-chevron-left me-1"></i>Prev
+                  </a>
+                <% } %>
+                <% for (let i = 1; i <= pages; i++) { %>
+                  <% if (i === page) { %>
+                    <span class="current"><%= i %></span>
+                  <% } else { %>
+                    <a href="?page=<%= i %>&search=<%= query.search || '' %>"><%= i %></a>
+                  <% } %>
+                <% } %>
+                <% if (page < pages) { %>
+                  <a href="?page=<%= page + 1 %>&search=<%= query.search || '' %>">
+                    Next<i class="fas fa-chevron-right ms-1"></i>
+                  </a>
+                <% } %>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

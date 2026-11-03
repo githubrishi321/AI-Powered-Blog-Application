@@ -1,0 +1,13 @@
+<% if (locals.flash && locals.flash.success && locals.flash.success.length) { %>
+  <div class="flash-success">
+    <i class="fas fa-check-circle"></i>
+    <%= locals.flash.success[0] %>
+  </div>
+<% } %>
+<% if (locals.flash && locals.flash.error && locals.flash.error.length) { %>
+  <div class="flash-error">
+    <i class="fas fa-exclamation-circle"></i>
+    <%= locals.flash.error[0] %>
+  </div>
+<% } %>
+

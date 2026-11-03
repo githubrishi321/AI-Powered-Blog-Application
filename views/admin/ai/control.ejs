@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>AI Tone Converter Control | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'ai' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'AI Control' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <!-- Top info cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-robot"></i></div>
+            <div>
+              <div class="stat-value"><%= totalToday %></div>
+              <div class="stat-label">Conversions Today</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-icon <%= settings.aiEnabled ? 'green' : 'red' %>">
+              <i class="fas fa-<%= settings.aiEnabled ? 'check-circle' : 'ban' %>"></i>
+            </div>
+            <div>
+              <div class="stat-value"><%= settings.aiEnabled ? 'Active' : 'Disabled' %></div>
+              <div class="stat-label">Feature Status</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-icon <%= groqConfigured ? 'teal' : 'orange' %>">
+              <i class="fas fa-key"></i>
+            </div>
+            <div>
+              <div class="stat-value"><%= groqConfigured ? 'Configured' : 'Missing' %></div>
+              <div class="stat-label">GROQ_API_KEY (<%= groqConfigured ? 'Yes' : 'No' %>)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <form action="/admin/ai/save" method="POST">
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+
+        <div class="admin-card mb-4">
+          <div class="admin-card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-sliders-h me-2 text-primary"></i>Global AI Settings</h5>
+            <a href="/admin/ai/logs" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-list me-1"></i>View AI Logs
+            </a>
+          </div>
+          <div class="admin-card-body">
+            <div class="row g-3">
+              <div class="col-md-12">
+                <div class="form-check form-switch mb-3">
+                  <input class="form-check-input" type="checkbox" role="switch" id="aiEnabled" name="aiEnabled" <%= settings.aiEnabled ? 'checked' : '' %>>
+                  <label class="form-check-label fw-bold" for="aiEnabled">
+                    Enable AI Tone Converter Feature Globally
+                  </label>
+                  <div class="form-text">When disabled, all /ai/tone requests return a 503 service unavailable response.</div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-bold">LLM Model Name</label>
+                <input type="text" name="aiModel" class="form-control" value="<%= settings.aiModel || 'llama-3.3-70b-versatile' %>" required>
+                <div class="form-text">e.g. <code>llama-3.3-70b-versatile</code></div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Max Input Characters</label>
+                <input type="number" name="aiMaxInputLength" class="form-control" value="<%= settings.aiMaxInputLength || 5000 %>" min="100" max="50000" required>
+                <div class="form-text">Default: 5000 chars</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Daily User Limit</label>
+                <input type="number" name="aiDailyUserLimit" class="form-control" value="<%= settings.aiDailyUserLimit || 0 %>" min="0">
+                <div class="form-text">0 = unlimited conversions per day</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tone Configurations -->
+        <div class="admin-card mb-4">
+          <div class="admin-card-header">
+            <h5><i class="fas fa-comment-dots me-2 text-primary"></i>Tone Prompts & Toggle Controls</h5>
+          </div>
+          <div class="admin-card-body">
+            <div class="row g-4">
+              <% tones.forEach(tone => { 
+                   const config = toneConfigs[tone] || { enabled: true, systemPrompt: '' };
+                   const usage = toneUsage[tone] || 0;
+              %>
+                <div class="col-12 border-bottom pb-4">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center gap-3">
+                      <span class="badge badge-featured text-uppercase px-3 py-2 fs-6">
+                        <%= tone %>
+                      </span>
+                      <span class="text-muted small">
+                        <i class="fas fa-chart-bar me-1"></i> <%= usage %> conversions (last 7d)
+                      </span>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" 
+                             id="tone_<%= tone %>_enabled" 
+                             name="tone_<%= tone %>_enabled" 
+                             <%= config.enabled ? 'checked' : '' %>>
+                      <label class="form-check-label fw-semibold" for="tone_<%= tone %>_enabled">
+                        Enabled
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="form-label small fw-semibold text-muted">System Prompt for <%= tone %></label>
+                    <textarea name="tone_<%= tone %>_prompt" rows="3" class="form-control font-monospace" style="font-size: 0.85rem;"><%= config.systemPrompt %></textarea>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+          <div class="admin-card-header bg-light justify-content-end">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="fas fa-save me-2"></i>Save AI Settings
+            </button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/scripts') %>
+</body>
+</html>
+

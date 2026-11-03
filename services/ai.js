@@ -3,8 +3,8 @@ const Groq = require("groq-sdk");
 // Initialize the Groq client with the API key from environment variables
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// The tone prompts remain exactly the same as requested
-const TONE_PROMPTS = {
+// Default tone prompts — can be overridden by DB settings
+const DEFAULT_TONE_PROMPTS = {
   professional: `Rewrite the following blog text in a professional 
   and formal tone. Use clear, authoritative language suitable for 
   a business audience. Keep all key information but elevate the 
@@ -33,30 +33,52 @@ const TONE_PROMPTS = {
 
 /**
  * Converts the tone of the provided blog text using the Groq API.
+ * Settings are read from the database (passed in) with safe fallback to defaults.
+ *
  * @param {string} text - The original blog text to rewrite.
  * @param {string} tone - The desired tone for the rewritten text.
+ * @param {object} settings - Site settings object from DB (optional).
  * @returns {Promise<string>} The converted text.
  */
-async function convertTone(text, tone) {
+async function convertTone(text, tone, settings = null) {
   // If the user wants the original text, just return it
   if (tone === "original") return text;
 
-  // Retrieve the system prompt for the selected tone
-  const prompt = TONE_PROMPTS[tone];
+  // Determine system prompt: prefer DB setting, fallback to default
+  let prompt = DEFAULT_TONE_PROMPTS[tone];
+  if (settings && settings.aiTones) {
+    const toneConfig = settings.aiTones instanceof Map
+      ? settings.aiTones.get(tone)
+      : settings.aiTones[tone];
+
+    if (toneConfig) {
+      if (toneConfig.enabled === false) {
+        throw new Error(`Tone "${tone}" is currently disabled.`);
+      }
+      if (toneConfig.systemPrompt && toneConfig.systemPrompt.trim()) {
+        prompt = toneConfig.systemPrompt;
+      }
+    }
+  }
+
   if (!prompt) throw new Error(`Unknown tone: ${tone}`);
+
+  // Use model from settings with fallback
+  const model =
+    (settings && settings.aiModel) ? settings.aiModel : "llama-3.3-70b-versatile";
 
   // Call the Groq API to generate the rewritten content
   const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model,
     max_tokens: 1024,
     messages: [
       { role: "system", content: prompt },
-      { role: "user", content: text }
-    ]
+      { role: "user", content: text },
+    ],
   });
 
   // Extract and return the generated content from the response
   return response.choices[0].message.content;
 }
 
-module.exports = { convertTone };
+module.exports = { convertTone, DEFAULT_TONE_PROMPTS };

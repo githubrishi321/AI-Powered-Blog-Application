@@ -27,6 +27,13 @@
 
       <ul class="navbar-nav">
         <% if (locals.user) { %>
+          <% if (locals.user.role === 'ADMIN') { %>
+          <li class="nav-item">
+            <a class="nav-link nav-admin-link" href="/admin/dashboard">
+              <i class="fas fa-shield-alt me-1"></i><span class="d-none d-sm-inline">Admin Panel</span>
+            </a>
+          </li>
+          <% } %>
           <li class="nav-item">
             <a class="nav-link" href="/blog/add-new">
               <i class="fas fa-plus me-1"></i><span class="d-none d-sm-inline">Add Blog</span>
@@ -41,32 +48,29 @@
               aria-expanded="false"
             >
               <img src="<%= locals.user.profileImageURL %>" 
-                   class="rounded-circle me-2" 
+                   class="rounded-circle me-2 nav-avatar" 
                    width="32" 
                    height="32" 
-                   style="object-fit: cover;"
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';" />
-              <i class="fas fa-user-circle me-2" style="display: none;"></i>
+                   onerror="this.classList.add('d-none'); this.nextElementSibling.classList.remove('d-none');" />
+              <i class="fas fa-user-circle me-2 d-none"></i>
               <span class="d-none d-md-inline"><%= locals.user.fullName || locals.user.email %></span>
             </a>
 
-
-
-            
             <ul class="dropdown-menu dropdown-menu-end">
+              <% if (locals.user.role === 'ADMIN') { %>
+              <li>
+                <a class="dropdown-item" href="/admin/dashboard">
+                  <i class="fas fa-shield-alt me-2 text-primary"></i>Admin Panel
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <% } %>
               <li>
                 <a class="dropdown-item" href="/user/logout">
                   <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </a>
               </li>
             </ul>
-
-
-
-
-
-
-
           </li>
         <% } else { %>
           <li class="nav-item">

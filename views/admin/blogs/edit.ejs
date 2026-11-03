@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Edit Blog | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'blogs' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Edit Blog' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Edit Blog</h4>
+        <a href="/admin/blogs" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-arrow-left me-1"></i>Back to Blogs
+        </a>
+      </div>
+
+      <!-- Validation Errors -->
+      <% if (locals.errors && locals.errors.length > 0) { %>
+        <div class="alert alert-danger flash-error mb-4">
+          <ul class="mb-0 ps-3">
+            <% errors.forEach(function(err) { %>
+              <li><%= err.msg %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+
+      <form
+        method="POST"
+        action="/admin/blogs/<%= blog._id %>/edit"
+        enctype="multipart/form-data"
+        novalidate
+      >
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <div class="row g-4">
+          <!-- Main content -->
+          <div class="col-12 col-lg-8">
+            <div class="admin-card mb-4">
+              <div class="admin-card-header">
+                <h6 class="mb-0"><i class="fas fa-pen me-2"></i>Blog Content</h6>
+              </div>
+              <div class="admin-card-body">
+                <!-- Title -->
+                <div class="mb-3">
+                  <label for="title" class="form-label fw-semibold">
+                    Title <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    class="form-control"
+                    value="<%= blog.title %>"
+                    placeholder="Blog title..."
+                    required
+                  >
+                </div>
+
+                <!-- Body -->
+                <div class="mb-3">
+                  <label for="body" class="form-label fw-semibold">
+                    Body <span class="text-danger">*</span>
+                  </label>
+                  <textarea
+                    id="body"
+                    name="body"
+                    class="form-control"
+                    rows="15"
+                    placeholder="Blog content..."
+                    required
+                  ><%= blog.body %></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar: meta & image -->
+          <div class="col-12 col-lg-4">
+            <!-- Status -->
+            <div class="admin-card mb-4">
+              <div class="admin-card-header">
+                <h6 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Settings</h6>
+              </div>
+              <div class="admin-card-body">
+                <!-- Status -->
+                <div class="mb-3">
+                  <label for="status" class="form-label fw-semibold">Status</label>
+                  <select id="status" name="status" class="form-select">
+                    <option value="published" <%= blog.status === 'published' ? 'selected' : '' %>>Published</option>
+                    <option value="hidden"    <%= blog.status === 'hidden'    ? 'selected' : '' %>>Hidden</option>
+                    <option value="featured"  <%= blog.status === 'featured'  ? 'selected' : '' %>>Featured</option>
+                  </select>
+                </div>
+
+                <!-- Author -->
+                <div class="mb-3">
+                  <label for="authorId" class="form-label fw-semibold">Author</label>
+                  <select id="authorId" name="authorId" class="form-select">
+                    <% authors.forEach(function(author) { %>
+                      <option
+                        value="<%= author._id %>"
+                        <%= blog.createdBy && blog.createdBy._id && blog.createdBy._id.toString() === author._id.toString() ? 'selected' : '' %>
+                      >
+                        <%= author.fullName %> (<%= author.email %>)
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cover Image -->
+            <div class="admin-card">
+              <div class="admin-card-header">
+                <h6 class="mb-0"><i class="fas fa-image me-2"></i>Cover Image</h6>
+              </div>
+              <div class="admin-card-body">
+                <!-- Current image preview -->
+                <% const resolvedEditCover = resolveCoverUrl(blog); %>
+                <% if (resolvedEditCover && !resolvedEditCover.includes('blog-placeholder.svg')) { %>
+                  <div class="mb-3 text-center">
+                    <img
+                      id="coverPreview"
+                      src="<%= resolvedEditCover %>"
+                      alt="Current cover image"
+                      class="img-fluid rounded border blog-cover"
+                      style="max-height:160px;object-fit:cover;width:100%;"
+                    >
+                    <p class="small text-muted mt-1 mb-0">Current cover image</p>
+                  </div>
+                <% } else { %>
+                  <div class="mb-3 text-center p-3 bg-light rounded border">
+                    <img src="/Images/blog-placeholder.svg" class="img-fluid rounded mb-2" style="max-height:100px;" alt="Placeholder">
+                    <p class="small text-muted mb-0">No cover image</p>
+                  </div>
+                <% } %>
+
+                <!-- Upload new -->
+                <div class="mb-2">
+                  <label for="coverImage" class="form-label small fw-semibold">Upload New Cover</label>
+                  <input
+                    type="file"
+                    id="coverImage"
+                    name="coverImage"
+                    class="form-control form-control-sm"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                  >
+                  <div class="form-text">JPG, PNG, GIF, WebP</div>
+                </div>
+
+                <!-- Remove -->
+                <% if (blog.coverImageURL) { %>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="removeCover"
+                      name="removeCover"
+                      value="1"
+                    >
+                    <label class="form-check-label text-danger small" for="removeCover">
+                      Remove cover image
+                    </label>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="d-flex gap-3 mt-4">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>Save Changes
+          </button>
+          <a href="/admin/blogs" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

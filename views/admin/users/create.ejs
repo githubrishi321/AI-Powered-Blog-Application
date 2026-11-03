@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Create User | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'users' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Create User' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-7">
+          <div class="admin-card">
+            <div class="admin-card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0"><i class="fas fa-user-plus me-2"></i>New User</h6>
+              <a href="/admin/users" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Users
+              </a>
+            </div>
+            <div class="admin-card-body">
+
+              <!-- Validation Errors -->
+              <% if (locals.errors && locals.errors.length > 0) { %>
+                <div class="alert alert-danger flash-error">
+                  <ul class="mb-0 ps-3">
+                    <% errors.forEach(function(err) { %>
+                      <li><%= err.msg %></li>
+                    <% }) %>
+                  </ul>
+                </div>
+              <% } %>
+
+              <form method="POST" action="/admin/users/create" novalidate>
+                <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                <!-- Full Name -->
+                <div class="mb-3">
+                  <label for="fullName" class="form-label fw-semibold">
+                    Full Name <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    class="form-control"
+                    placeholder="John Doe"
+                    required
+                    autofocus
+                  >
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                  <label for="email" class="form-label fw-semibold">
+                    Email Address <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="form-control"
+                    placeholder="user@example.com"
+                    required
+                  >
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                  <label for="password" class="form-label fw-semibold">
+                    Password <span class="text-danger">*</span>
+                  </label>
+                  <div class="input-group">
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      class="form-control"
+                      placeholder="Minimum 8 characters"
+                      required
+                      autocomplete="new-password"
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      id="togglePassword"
+                      title="Show/Hide Password"
+                    >
+                      <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                    </button>
+                  </div>
+                  <div class="form-text">Minimum 8 characters recommended.</div>
+                </div>
+
+                <!-- Role -->
+                <div class="mb-4">
+                  <label for="role" class="form-label fw-semibold">
+                    Role <span class="text-danger">*</span>
+                  </label>
+                  <select id="role" name="role" class="form-select" required>
+                    <option value="USER" selected>User</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                  <div class="form-text text-warning">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Assigning Admin role grants full dashboard access.
+                  </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>Create User
+                  </button>
+                  <a href="/admin/users" class="btn btn-outline-secondary">
+                    Cancel
+                  </a>
+                </div>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

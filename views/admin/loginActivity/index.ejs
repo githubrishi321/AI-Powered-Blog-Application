@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Login Activity | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'loginActivity' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Login Activity & History' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0">Authentication Audits</h4>
+          <small class="text-muted"><%= total %> record<%= total !== 1 ? 's' : '' %> logged</small>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="admin-card mb-4">
+        <div class="admin-card-body">
+          <form method="GET" action="/admin/login-activity" class="row g-3 align-items-end">
+            <div class="col-md-5">
+              <label class="form-label small fw-semibold">Email Attempted</label>
+              <input type="text" name="email" class="form-control" placeholder="Search email..." value="<%= query.email || '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Outcome</label>
+              <select name="success" class="form-select">
+                <option value="" <%= !query.success ? 'selected' : '' %>>All Outcomes</option>
+                <option value="true" <%= query.success === 'true' ? 'selected' : '' %>>Success Only (✅)</option>
+                <option value="false" <%= query.success === 'false' ? 'selected' : '' %>>Failed Only (❌)</option>
+              </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-1"></i>Filter
+              </button>
+              <a href="/admin/login-activity" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="admin-card">
+        <div class="admin-card-body p-0">
+          <% if (logs.length === 0) { %>
+            <div class="text-center py-5">
+              <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No login activity recorded</h5>
+              <p class="text-muted">Activity will appear here as users attempt authentication.</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="admin-table table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Outcome</th>
+                    <th>Email Attempted</th>
+                    <th>Matched Account</th>
+                    <th>IP Address</th>
+                    <th>Device / User Agent</th>
+                    <th>Failure Reason</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% logs.forEach(log => { %>
+                    <tr>
+                      <td>
+                        <% if (log.success) { %>
+                          <span class="badge badge-success"><i class="fas fa-check-circle me-1"></i>Success</span>
+                        <% } else { %>
+                          <span class="badge badge-error"><i class="fas fa-times-circle me-1"></i>Failed</span>
+                        <% } %>
+                      </td>
+                      <td class="fw-semibold">
+                        <%= log.emailAttempted %>
+                      </td>
+                      <td>
+                        <% if (log.user) { %>
+                          <a href="/admin/users/<%= log.user._id %>" class="text-decoration-none small">
+                            <i class="fas fa-user me-1"></i><%= log.user.fullName || log.user.email %>
+                          </a>
+                        <% } else { %>
+                          <span class="text-muted small">No account</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="font-monospace small text-muted"><%= log.ip || '—' %></span>
+                      </td>
+                      <td style="max-width: 200px;">
+                        <span class="small text-muted text-truncate d-inline-block" style="max-width: 200px;" title="<%= log.userAgent %>">
+                          <%= log.userAgent ? log.userAgent.substring(0, 40) + '...' : '—' %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (log.failReason) { %>
+                          <span class="text-danger small"><%= log.failReason %></span>
+                        <% } else { %>
+                          <span class="text-muted small">—</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="small text-muted"><%= new Date(log.createdAt).toLocaleString() %></span>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <% if (pages > 1) { %>
+        <div class="admin-pagination">
+          <% if (page > 1) { %>
+            <a href="?page=<%= page - 1 %>&email=<%= query.email || '' %>&success=<%= query.success || '' %>">
+              <i class="fas fa-chevron-left me-1"></i>Prev
+            </a>
+          <% } %>
+          <% for (let i = 1; i <= pages; i++) { %>
+            <% if (i === page) { %>
+              <span class="current"><%= i %></span>
+            <% } else if (i === 1 || i === pages || (i >= page - 2 && i <= page + 2)) { %>
+              <a href="?page=<%= i %>&email=<%= query.email || '' %>&success=<%= query.success || '' %>"><%= i %></a>
+            <% } else if (i === page - 3 || i === page + 3) { %>
+              <span class="px-2 text-muted">…</span>
+            <% } %>
+          <% } %>
+          <% if (page < pages) { %>
+            <a href="?page=<%= page + 1 %>&email=<%= query.email || '' %>&success=<%= query.success || '' %>">
+              Next<i class="fas fa-chevron-right ms-1"></i>
+            </a>
+          <% } %>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/scripts') %>
+</body>
+</html>
+

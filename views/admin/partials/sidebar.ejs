@@ -1,0 +1,49 @@
+<aside class="admin-sidebar" id="adminSidebar">
+  <div class="sidebar-brand">
+    <a href="/admin/dashboard">
+      <i class="fas fa-shield-alt"></i>
+      Blogify
+      <span class="brand-badge">Admin</span>
+    </a>
+  </div>
+
+  <nav>
+    <div class="sidebar-section-label">Overview</div>
+    <a href="/admin/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">
+      <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+
+    <div class="sidebar-section-label">Content</div>
+    <a href="/admin/users" class="<%= currentPage === 'users' ? 'active' : '' %>">
+      <i class="fas fa-users"></i> Users
+    </a>
+    <a href="/admin/blogs" class="<%= currentPage === 'blogs' ? 'active' : '' %>">
+      <i class="fas fa-newspaper"></i> Blogs
+    </a>
+    <a href="/admin/comments" class="<%= currentPage === 'comments' ? 'active' : '' %>">
+      <i class="fas fa-comments"></i> Comments
+    </a>
+
+    <div class="sidebar-section-label">Features</div>
+    <a href="/admin/ai" class="<%= currentPage === 'ai' ? 'active' : '' %>">
+      <i class="fas fa-robot"></i> AI Control
+    </a>
+    <a href="/admin/settings" class="<%= currentPage === 'settings' ? 'active' : '' %>">
+      <i class="fas fa-cog"></i> Site Settings
+    </a>
+
+    <div class="sidebar-section-label">Security</div>
+    <a href="/admin/login-activity" class="<%= currentPage === 'loginActivity' ? 'active' : '' %>">
+      <i class="fas fa-sign-in-alt"></i> Login Activity
+    </a>
+    <a href="/admin/audit-log" class="<%= currentPage === 'auditLog' ? 'active' : '' %>">
+      <i class="fas fa-history"></i> Audit Log
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/"><i class="fas fa-external-link-alt"></i> View Site</a>
+    <a href="/user/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+</aside>
+

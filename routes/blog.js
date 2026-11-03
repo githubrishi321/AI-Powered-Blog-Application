@@ -1,39 +1,11 @@
 const { Router } = require("express");
 const path = require("path");
-const fs = require("fs");
 const router = Router();
-const multer = require("multer");
 const mongoose = require("mongoose");
 const Blog = require("../models/blog");
 const Comment = require("../models/comment");
 const { isAuthenticated } = require("../middlewares/authentication");
-
-const uploadsDirectory = path.resolve("./public/uploads");
-
-if (!fs.existsSync(uploadsDirectory)) {
-  fs.mkdirSync(uploadsDirectory, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDirectory);
-  },
-  filename: function (req, file, cb) {
-    const filename = `${Date.now()}-${file.originalname}`;
-    cb(null, filename);
-  },
-});
-
-const upload = multer({ 
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
-  }
-});
+const { uploadCover, upload: storeImage, remove: removeImage } = require("../services/imageStorage");
 
 router.get("/add-new", isAuthenticated, (req, res) => {
   return res.render("addBlog", {
@@ -45,76 +17,86 @@ router.get("/test/user", isAuthenticated, (req, res) => {
   res.json({
     user: req.user,
     userId: req.user._id,
-    userType: typeof req.user._id
+    userType: typeof req.user._id,
   });
 });
 
-router.post("/", isAuthenticated, upload.single("coverImage"), async (req, res) => {
-  try {
-    const { title, body } = req.body;
-    
-    if (!title || !body) {
-      return res.status(400).render("addBlog", {
+router.post(
+  "/",
+  isAuthenticated,
+  (req, res, next) => {
+    uploadCover.single("coverImage")(req, res, (err) => {
+      if (err) {
+        return res.status(400).render("addBlog", {
+          user: req.user,
+          error:
+            err.code === "LIMIT_FILE_SIZE"
+              ? "File too large. Maximum image size is 5MB."
+              : err.message,
+        });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
+    let uploaded = null;
+    try {
+      const { title, body } = req.body;
+
+      if (!title || !body) {
+        return res.status(400).render("addBlog", {
+          user: req.user,
+          error: "Title and body are required",
+        });
+      }
+
+      const blogData = {
+        body,
+        title,
+        createdBy: req.user._id,
+      };
+
+      if (req.file) {
+        uploaded = await storeImage(req.file.buffer, req.file.mimetype);
+        blogData.coverImageURL = uploaded.url;
+        blogData.coverImagePublicId = uploaded.publicId;
+      }
+
+      try {
+        const blog = await Blog.create(blogData);
+        return res.redirect(`/blog/${blog._id}`);
+      } catch (dbError) {
+        // Rollback uploaded asset if database save fails
+        if (uploaded && uploaded.publicId) {
+          await removeImage(uploaded.publicId);
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      console.error("Error creating blog:", error);
+      return res.status(500).render("addBlog", {
         user: req.user,
-        error: "Title and body are required"
+        error: error.message || "Error creating blog",
       });
     }
-
-    const blogData = {
-      body,
-      title,
-      createdBy: req.user._id,
-    };
-
-    if (req.file) {
-      blogData.coverImageURL = `/uploads/${req.file.filename}`;
-      console.log("Blog image URL:", blogData.coverImageURL);
-    }
-
-    const blog = await Blog.create(blogData);
-    console.log("Created blog with image:", blog.coverImageURL);
-    return res.redirect(`/blog/${blog._id}`);
-  } catch (error) {
-    console.error("Error creating blog:", error);
-    return res.status(500).render("addBlog", {
-      user: req.user,
-      error: "Error creating blog"
-    });
   }
-});
+);
 
 router.get("/:id", async function (req, res) {
   try {
     const blog = await Blog.findById(req.params.id).populate("createdBy");
-    
+
     if (!blog) {
       return res.status(404).render("error", {
         user: req.user,
-        message: "Blog not found"
+        message: "Blog not found",
       });
     }
-    
-    console.log("Blog cover image URL:", blog.coverImageURL);
-    if (blog.createdBy) {
-      console.log("User profile image URL:", blog.createdBy.profileImageURL);
-    }
-    
+
     const comments = await Comment.find({ blogId: req.params.id }).populate(
       "createdBy"
     );
-    
-    console.log("Comments found:", comments.length);
-    comments.forEach((comment, index) => {
-      console.log(`Comment ${index + 1}:`, {
-        content: comment.content,
-        createdBy: comment.createdBy,
-        hasUser: !!comment.createdBy,
-        userName: comment.createdBy ? comment.createdBy.fullName : 'No user',
-        userId: comment.createdBy ? comment.createdBy._id : 'No ID',
-        userEmail: comment.createdBy ? comment.createdBy.email : 'No email'
-      });
-    });
-    
+
     return res.render("blog", {
       user: req.user,
       blog: blog,
@@ -124,7 +106,7 @@ router.get("/:id", async function (req, res) {
     console.error("Error fetching blog:", error);
     return res.status(500).render("error", {
       user: req.user,
-      message: "Error loading blog"
+      message: "Error loading blog",
     });
   }
 });
@@ -132,22 +114,17 @@ router.get("/:id", async function (req, res) {
 router.post("/comment/:blogId", isAuthenticated, async function (req, res) {
   try {
     const { content } = req.body;
-    
-    if (!content || content.trim() === '') {
+
+    if (!content || content.trim() === "") {
       return res.status(400).redirect(`/blog/${req.params.blogId}`);
     }
 
-    console.log("Creating comment with user ID:", req.user._id);
-    console.log("User object:", req.user);
-
-    const comment = await Comment.create({
+    await Comment.create({
       content: content.trim(),
       blogId: new mongoose.Types.ObjectId(req.params.blogId),
       createdBy: new mongoose.Types.ObjectId(req.user._id),
     });
-    
-    console.log("Created comment:", comment);
-    
+
     res.redirect(`/blog/${req.params.blogId}`);
   } catch (error) {
     console.error("Error creating comment:", error);

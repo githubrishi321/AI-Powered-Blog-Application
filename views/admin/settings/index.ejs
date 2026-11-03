@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Site Settings | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'settings' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Site Settings' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          <form action="/admin/settings/save" method="POST">
+            <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+
+            <!-- General Settings -->
+            <div class="admin-card mb-4">
+              <div class="admin-card-header">
+                <h5><i class="fas fa-globe me-2 text-primary"></i>General & Access Controls</h5>
+              </div>
+              <div class="admin-card-body">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Site Name</label>
+                  <input type="text" name="siteName" class="form-control" value="<%= settings.siteName || 'Blogify' %>" required>
+                  <div class="form-text">Displayed in navigation brand, footer, and emails.</div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="form-check form-switch p-3 bg-light rounded-3">
+                      <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="registrationsOpen" name="registrationsOpen" <%= settings.registrationsOpen ? 'checked' : '' %>>
+                      <label class="form-check-label fw-bold" for="registrationsOpen">
+                        Public User Registrations
+                      </label>
+                      <div class="form-text">When off, new signups are blocked. Existing users can still log in.</div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-check form-switch p-3 bg-light rounded-3">
+                      <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="maintenanceMode" name="maintenanceMode" <%= settings.maintenanceMode ? 'checked' : '' %>>
+                      <label class="form-check-label fw-bold text-danger" for="maintenanceMode">
+                        <i class="fas fa-tools me-1"></i>Maintenance Mode
+                      </label>
+                      <div class="form-text">When on, non-admins see a 503 maintenance page. Admins bypass.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Uploads & Roles -->
+            <div class="admin-card mb-4">
+              <div class="admin-card-header">
+                <h5><i class="fas fa-cloud-upload-alt me-2 text-primary"></i>Uploads & User Defaults</h5>
+              </div>
+              <div class="admin-card-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">Default Role for New Users</label>
+                    <select name="defaultNewUserRole" class="form-select">
+                      <option value="USER" <%= settings.defaultNewUserRole === 'USER' ? 'selected' : '' %>>USER (Standard writer)</option>
+                      <option value="ADMIN" <%= settings.defaultNewUserRole === 'ADMIN' ? 'selected' : '' %>>ADMIN (Full administrative privileges)</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">Max Image Upload Size (MB)</label>
+                    <input type="number" name="maxUploadSizeMB" class="form-control" value="<%= Math.round((settings.maxUploadSizeBytes || 5242880) / (1024 * 1024)) %>" min="1" max="50">
+                    <div class="form-text">Cover images & profile photos limit. Default: 5 MB.</div>
+                  </div>
+
+                  <div class="col-12 mt-4">
+                    <label class="form-label fw-bold d-block mb-2">Allowed Image MIME Types</label>
+                    <% const currentTypes = settings.allowedImageTypes || ['image/jpeg', 'image/png', 'image/gif', 'image/webp']; %>
+                    <div class="d-flex flex-wrap gap-4">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="allowedImageTypes" value="image/jpeg" id="mime_jpeg" <%= currentTypes.includes('image/jpeg') ? 'checked' : '' %>>
+                        <label class="form-check-label" for="mime_jpeg">JPEG / JPG (<code>image/jpeg</code>)</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="allowedImageTypes" value="image/png" id="mime_png" <%= currentTypes.includes('image/png') ? 'checked' : '' %>>
+                        <label class="form-check-label" for="mime_png">PNG (<code>image/png</code>)</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="allowedImageTypes" value="image/gif" id="mime_gif" <%= currentTypes.includes('image/gif') ? 'checked' : '' %>>
+                        <label class="form-check-label" for="mime_gif">GIF (<code>image/gif</code>)</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="allowedImageTypes" value="image/webp" id="mime_webp" <%= currentTypes.includes('image/webp') ? 'checked' : '' %>>
+                        <label class="form-check-label" for="mime_webp">WebP (<code>image/webp</code>)</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="admin-card-header bg-light justify-content-end">
+                <button type="submit" class="btn btn-primary px-4">
+                  <i class="fas fa-save me-2"></i>Save Site Settings
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/scripts') %>
+</body>
+</html>
+

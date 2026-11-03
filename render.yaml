@@ -17,4 +17,26 @@ services:
         sync: false
       - key: PASSWORD_SALT
         sync: false
-
+      - key: GROQ_API_KEY
+        sync: false
+      # Cloudinary Persistent Image Storage
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      # Admin Panel configuration
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      # Optional lockout configuration
+      - key: MAX_LOGIN_ATTEMPTS
+        value: 5
+      - key: LOCK_DURATION_MINUTES
+        value: 15
