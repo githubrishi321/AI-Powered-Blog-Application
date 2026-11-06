@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <!-- Title and Meta: Strictly company name and count, no author info -->
+  <title><%= company.name %> Interview Experiences (<%= stats.totalCount %>) - Blogify</title>
+  <meta name="description" content="Read <%= stats.totalCount %> interview experiences and preparation guides for <%= company.name %> on Blogify.">
+  <% if (stats.totalCount < 3 || company.isDemo) { %>
+    <meta name="robots" content="noindex">
+  <% } %>
+</head>
+<body>
+  <%- include("../partials/nav") %>
+
+  <!-- Company Header -->
+  <div class="bg-light py-5 border-bottom mb-4">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+              <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+              <li class="breadcrumb-item"><a href="/companies" class="text-decoration-none">Companies</a></li>
+              <li class="breadcrumb-item active" aria-current="page"><%= company.name %></li>
+            </ol>
+          </nav>
+          <h1 class="display-5 fw-bold text-dark mb-1 d-inline-block"><%= company.name %></h1>
+          <% if (company.isDemo) { %>
+            <span class="badge bg-secondary ms-2 align-middle">Demo</span>
+          <% } %>
+          <% if (company.aliases && company.aliases.length > 0) { %>
+            <div class="text-muted small mb-2">
+              <i class="fas fa-tags me-1"></i>Also known as: <%= company.aliases.join(", ") %>
+            </div>
+          <% } %>
+          <div class="text-muted fw-semibold">
+            <i class="fas fa-file-alt me-1 text-primary"></i>Based on <span data-stat="total"><%= stats.totalCount %></span> <%= stats.totalCount === 1 ? 'experience' : 'experiences' %>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="/experiences?company=<%= company._id %>" class="btn btn-outline-primary">
+            <i class="fas fa-filter me-1"></i>See all with filters
+          </a>
+          <% if (locals.user) { %>
+            <a href="/experiences/new" class="btn btn-primary">
+              <i class="fas fa-plus-circle me-1"></i>Share Your Experience
+            </a>
+          <% } else { %>
+            <a href="/user/signin" class="btn btn-primary">
+              <i class="fas fa-sign-in-alt me-1"></i>Sign In to Share
+            </a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+    <% if (locals.hasDemoExperience) { %>
+      <div class="alert alert-info mb-4" role="alert">
+        <i class="fas fa-info-circle me-2"></i>This page shows sample data for demonstration. The statistics are not real.
+      </div>
+    <% } %>
+
+    <!-- Threshold Condition Check: N < 3 vs N >= 3 -->
+    <% if (stats.totalCount < 3) { %>
+      <!-- Insufficient Data Notice -->
+      <div class="alert alert-info border d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-chart-pie fa-2x text-info me-3"></i>
+          <div>
+            <h5 class="alert-heading fw-bold mb-1">Not enough data yet (at least 3 experiences needed)</h5>
+            <p class="mb-0 text-muted">
+              Aggregate statistics and round analytics will unlock once 3 candidates share their interview experiences for <%= company.name %>.
+            </p>
+          </div>
+        </div>
+        <a href="/experiences/new" class="btn btn-sm btn-primary">
+          <i class="fas fa-plus me-1"></i>Share your experience
+        </a>
+      </div>
+    <% } else { %>
+      <!-- ─── Analytics Section (Only for N >= 3) ─── -->
+      <div class="row g-3 mb-4">
+        <!-- Stat Card: Total Experiences -->
+        <div class="col-6 col-md-3">
+          <div class="card shadow-sm border-0 h-100 text-center p-3">
+            <div class="text-muted small fw-semibold text-uppercase mb-1">Total Posts</div>
+            <div class="h2 fw-bold text-primary mb-0" data-stat="total-card"><%= stats.totalCount %></div>
+            <small class="text-muted">Interviews shared</small>
+          </div>
+        </div>
+
+        <!-- Stat Card: Avg Difficulty -->
+        <div class="col-6 col-md-3">
+          <div class="card shadow-sm border-0 h-100 text-center p-3">
+            <div class="text-muted small fw-semibold text-uppercase mb-1">Avg Difficulty</div>
+            <div class="h2 fw-bold text-dark mb-0"><span data-stat="avgDifficulty"><%= stats.avgDifficulty %></span> <span class="fs-6 text-muted">/ 5</span></div>
+            <small class="text-muted">Candidate rated</small>
+          </div>
+        </div>
+
+        <!-- Stat Card: Avg Rounds -->
+        <div class="col-6 col-md-3">
+          <div class="card shadow-sm border-0 h-100 text-center p-3">
+            <div class="text-muted small fw-semibold text-uppercase mb-1">Avg Rounds</div>
+            <div class="h2 fw-bold text-dark mb-0" data-stat="avgRounds"><%= stats.avgRounds %></div>
+            <small class="text-muted">Selection stages</small>
+          </div>
+        </div>
+
+        <!-- Stat Card: Verified Posts -->
+        <div class="col-6 col-md-3">
+          <div class="card shadow-sm border-0 h-100 text-center p-3">
+            <div class="text-muted small fw-semibold text-uppercase mb-1">Verified</div>
+            <div class="h2 fw-bold text-info mb-0" data-stat="verified"><%= stats.verifiedCount %></div>
+            <small class="text-muted">Confirmed on-campus</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts & Breakdowns (Strictly no inline style attributes) -->
+      <div class="row g-4 mb-5">
+        <!-- Outcome Breakdown -->
+        <div class="col-lg-6">
+          <div class="card shadow-sm border-0 h-100 p-4">
+            <h3 class="h6 fw-bold text-dark text-uppercase mb-3">
+              <i class="fas fa-poll me-2 text-primary"></i>Interview Outcomes
+            </h3>
+
+            <% if (stats.disclosedTotal >= 3) { %>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between small fw-semibold mb-1">
+                  <span class="text-success"><i class="fas fa-check-circle me-1"></i>Selected (<span data-stat="outcome-selected-pct"><%= stats.outcomePercentages.selected %></span>%)</span>
+                  <span class="text-muted"><span data-stat="outcome-selected"><%= stats.outcomeCounts.selected %></span> candidates</span>
+                </div>
+                <div class="progress mb-3 bg-light">
+                  <div
+                    class="progress-bar bg-success w-pct-<%= Math.min(100, Math.max(0, Math.round(stats.outcomePercentages.selected / 5) * 5)) %>"
+                    role="progressbar"
+                    aria-valuenow="<%= stats.outcomePercentages.selected %>"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+
+                <div class="d-flex justify-content-between small fw-semibold mb-1">
+                  <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Rejected (<span data-stat="outcome-rejected-pct"><%= stats.outcomePercentages.rejected %></span>%)</span>
+                  <span class="text-muted"><span data-stat="outcome-rejected"><%= stats.outcomeCounts.rejected %></span> candidates</span>
+                </div>
+                <div class="progress mb-3 bg-light">
+                  <div
+                    class="progress-bar bg-danger w-pct-<%= Math.min(100, Math.max(0, Math.round(stats.outcomePercentages.rejected / 5) * 5)) %>"
+                    role="progressbar"
+                    aria-valuenow="<%= stats.outcomePercentages.rejected %>"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+
+                <div class="d-flex justify-content-between small fw-semibold mb-1">
+                  <span class="text-warning"><i class="fas fa-clock me-1"></i>Waiting (<span data-stat="outcome-waiting-pct"><%= stats.outcomePercentages.waiting %></span>%)</span>
+                  <span class="text-muted"><span data-stat="outcome-waiting"><%= stats.outcomeCounts.waiting %></span> candidates</span>
+                </div>
+                <div class="progress mb-2 bg-light">
+                  <div
+                    class="progress-bar bg-warning w-pct-<%= Math.min(100, Math.max(0, Math.round(stats.outcomePercentages.waiting / 5) * 5)) %>"
+                    role="progressbar"
+                    aria-valuenow="<%= stats.outcomePercentages.waiting %>"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+              </div>
+            <% } else { %>
+              <div class="alert alert-light border small text-muted mb-3" data-stat="outcome-summary">
+                <i class="fas fa-info-circle me-1"></i><%= stats.disclosedTotal %> of <%= stats.totalCount %> shared an outcome.
+                (<span data-stat="outcome-selected"><%= stats.outcomeCounts.selected %></span> selected, <span data-stat="outcome-rejected"><%= stats.outcomeCounts.rejected %></span> rejected, <span data-stat="outcome-waiting"><%= stats.outcomeCounts.waiting %></span> waiting)
+              </div>
+            <% } %>
+
+            <div class="text-muted small mb-3">
+              <i class="fas fa-info-circle me-1"></i>Disclosed outcomes: <span data-stat="disclosedTotal"><%= stats.disclosedTotal %></span> &bull; Undisclosed: <span data-stat="outcome-undisclosed"><%= stats.outcomeCounts.undisclosed %></span>
+            </div>
+
+            <!-- Mandatory Outcome Disclaimer Note -->
+            <div class="alert alert-secondary py-2 px-3 small mb-0" role="note">
+              <i class="fas fa-shield-alt me-1"></i>Outcomes only come from people who chose to share, so they are not an official selection rate.
+            </div>
+          </div>
+        </div>
+
+        <!-- Round Types Frequency -->
+        <div class="col-lg-6">
+          <div class="card shadow-sm border-0 h-100 p-4">
+            <h3 class="h6 fw-bold text-dark text-uppercase mb-3">
+              <i class="fas fa-layer-group me-2 text-primary"></i>Round Types Encountered
+            </h3>
+
+            <% if (stats.roundTypes.length === 0) { %>
+              <p class="text-muted small">No specific round types recorded yet.</p>
+            <% } else { %>
+              <div class="d-flex flex-column gap-3">
+                <% stats.roundTypes.forEach(function(rt) { %>
+                  <div>
+                    <div class="d-flex justify-content-between small fw-semibold mb-1">
+                      <span class="text-capitalize text-dark">
+                        <%= rt.type %> Round
+                      </span>
+                      <span class="text-muted">
+                        <span data-stat="round-<%= rt.type %>"><%= rt.count %></span> of <%= stats.totalCount %> <%= stats.totalCount === 1 ? 'experience' : 'experiences' %> included a <%= rt.type %> round
+                      </span>
+                    </div>
+                    <div class="progress bg-light">
+                      <div
+                        class="progress-bar bg-primary w-pct-<%= Math.min(100, Math.max(0, Math.round(rt.percentage / 5) * 5)) %>"
+                        role="progressbar"
+                        aria-valuenow="<%= rt.percentage %>"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      ></div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- ─── Latest Experiences Section ─── -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h5 fw-bold text-dark mb-0">
+        Latest Experiences for <%= company.name %>
+      </h2>
+      <a href="/experiences?company=<%= company._id %>" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-sliders-h me-1"></i>Filter These Experiences
+      </a>
+    </div>
+
+    <% if (experiences.length === 0) { %>
+      <div class="card shadow-sm border-0 text-center py-5">
+        <div class="card-body">
+          <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+          <h4 class="h6 fw-bold text-dark mb-1">No experiences published yet</h4>
+          <p class="text-muted small mb-3">Be the first student to share your interview rounds for <%= company.name %>!</p>
+          <% if (locals.user) { %>
+            <a href="/experiences/new" class="btn btn-sm btn-primary">
+              <i class="fas fa-plus me-1"></i>Share Experience
+            </a>
+          <% } %>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+        <% experiences.forEach(function(card) { %>
+          <div class="col">
+            <div class="card h-100 shadow-sm border-0 experience-card">
+              <div class="card-body d-flex flex-column p-4">
+                <!-- Badges Row -->
+                <div class="d-flex flex-wrap gap-1 align-items-center mb-2">
+                  <span class="badge bg-light text-dark border"><%= card.driveType %></span>
+                  <span class="badge badge-outcome-<%= card.outcome %>">
+                    <%= card.outcome.charAt(0).toUpperCase() + card.outcome.slice(1) %>
+                  </span>
+                  <span class="badge bg-secondary">Diff: <%= card.difficulty %>/5</span>
+                  <% if (card.verified) { %>
+                    <span class="badge verified-badge" title="Verified: a Blogify moderator checked this experience. It is not a guarantee that every detail is correct.">
+                      <i class="fas fa-check-circle me-1"></i>Verified
+                    </span>
+                  <% } %>
+                  <% if (card.isDemo) { %>
+                    <span class="badge bg-secondary text-light">Demo</span>
+                  <% } %>
+                </div>
+
+                <!-- Role and Year -->
+                <h3 class="h5 fw-bold text-dark mb-1">
+                  <a href="/experiences/<%= card.id %>" class="text-decoration-none text-dark hover-primary">
+                    <%= card.role %> (<%= card.year %>)
+                  </a>
+                </h3>
+
+                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                  <!-- Author Block (via getPublicAuthor) -->
+                  <div class="d-flex align-items-center">
+                    <img
+                      src="<%= card.author.avatar %>"
+                      alt="Candidate"
+                      class="rounded-circle me-2 avatar-img"
+                      width="28"
+                      height="28"
+                    >
+                    <span class="small text-muted fw-semibold"><%= card.author.name %></span>
+                  </div>
+
+                  <a href="/experiences/<%= card.id %>" class="btn btn-sm btn-outline-primary">
+                    Read Story <i class="fas fa-arrow-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <nav aria-label="Company experiences pagination" class="d-flex justify-content-center mt-4">
+          <ul class="pagination">
+            <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
+              <a class="page-link" href="/company/<%= company.slug %>?page=<%= currentPage - 1 %>">Previous</a>
+            </li>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a class="page-link" href="/company/<%= company.slug %>?page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+            <li class="page-item <%= currentPage >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link" href="/company/<%= company.slug %>?page=<%= currentPage + 1 %>">Next</a>
+            </li>
+          </ul>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+
+  <%- include("../partials/footer") %>
+  <%- include("../partials/scripts") %>
+</body>
+</html>
+

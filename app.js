@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 8000;
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
@@ -9,7 +10,6 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const { doubleCsrf } = require("csrf-csrf");
 
 const { checkForAuthenticationCookie } = require("./middlewares/authentication");
 const { getSettings } = require("./services/settings");
@@ -44,7 +44,7 @@ const Blog = require("./models/blog");
 
 // ─── View Engine ─────────────────────────────────────────────────────────────
 app.set("view engine", "ejs");
-app.set("views", path.resolve("./views"));
+app.set("views", path.join(__dirname, "views"));
 
 // ─── Security: Helmet ────────────────────────────────────────────────────────
 app.use(
@@ -75,7 +75,7 @@ app.use(
 // ─── Cookies & Body Parsers ──────────────────────────────────────────────────
 app.use(cookieParser(process.env.COOKIE_SECRET || process.env.JWT_SECRET || "fallback-cookie-secret"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, parameterLimit: 10000, limit: "1mb" }));
 
 // ─── Session (for flash messages) ────────────────────────────────────────────
 app.use(
@@ -96,18 +96,7 @@ app.use(
 app.use(flash());
 
 // ─── CSRF Protection ─────────────────────────────────────────────────────────
-const { generateToken, doubleCsrfProtection } = doubleCsrf({
-  getSecret: () => process.env.JWT_SECRET || "csrf-secret",
-  cookieName: process.env.NODE_ENV === "production" ? "__Host-psifi.x-csrf-token" : "x-csrf-token",
-  cookieOptions: {
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
-    signed: false,
-    httpOnly: true,
-  },
-  size: 64,
-  getTokenFromRequest: (req) => req.body?._csrf || req.query?._csrf || req.headers?.["x-csrf-token"],
-});
+const { generateToken, doubleCsrfProtection } = require("./middlewares/csrf");
 
 // Provide CSRF token to all templates so forms can include it
 app.use((req, res, next) => {
@@ -140,14 +129,15 @@ const adminLimiter = rateLimit({
 app.use(checkForAuthenticationCookie("token"));
 
 // ─── Static Files & Startup Safety ──────────────────────────────────────────
-const uploadsDir = path.resolve("./public/uploads");
+const uploadsDir = path.join(__dirname, "public/uploads");
 const fs = require("fs");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-app.use(express.static(path.resolve("./public")));
-app.use("/images", express.static(path.resolve("./public/Images")));
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/Images", express.static(path.join(__dirname, "public/Images")));
+app.use("/images", express.static(path.join(__dirname, "public/Images")));
 
 // ─── Maintenance Mode ────────────────────────────────────────────────────────
 app.use(async (req, res, next) => {
@@ -174,8 +164,9 @@ app.use(async (req, res, next) => {
 // ─── Public Routes ───────────────────────────────────────────────────────────
 app.get("/", async (req, res) => {
   try {
-    // Only show published and featured blogs on the public home page (plus legacy blogs without status field)
+    // Only show published and featured blogs on the public home page (plus legacy blogs without status field), excluding experiences
     const allBlogs = await Blog.find({
+      type: { $ne: "experience" },
       $or: [
         { status: { $in: ["published", "featured"] } },
         { status: { $exists: false } },
@@ -205,9 +196,11 @@ app.get("/test-view", (req, res) => {
 app.use("/user/signin", signinLimiter);
 app.use("/user", require("./routes/user"));
 
-// ─── Blog & AI Routes ────────────────────────────────────────────────────────
+// ─── Blog, Experience & AI Routes ───────────────────────────────────────────
 app.use("/blog", require("./routes/blog"));
+app.use("/experiences", require("./routes/experience"));
 app.use("/ai", require("./routes/ai"));
+app.use("/", require("./routes/company"));
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 app.use("/admin", adminLimiter, require("./routes/admin"));
@@ -224,11 +217,22 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   // CSRF errors
   if (err.code === "EBADCSRFTOKEN" || err.status === 403) {
+    if (req.path && req.path.startsWith("/ai/")) {
+      return res.status(403).json({ error: "Invalid or missing CSRF token." });
+    }
     return res.status(403).render("error", {
       user: req.user,
       message: "Invalid or expired form token. Please go back and try again.",
     });
   }
+
+  // AI API route errors (log name and status only, never err.message or body)
+  if (req.path && req.path.startsWith("/ai/")) {
+    const status = err.status || 500;
+    console.error(`AI route error [${err.name || "Error"}]: status ${status}`);
+    return res.status(status).json({ error: "An unexpected error occurred." });
+  }
+
   console.error(err.stack);
   res.status(500).render("error", {
     user: req.user,
@@ -237,9 +241,11 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
-app.listen(PORT, "0.0.0.0", () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}`);
   if (process.env.NODE_ENV !== "production") {
     console.log(`Access the application at http://localhost:${PORT}`);
   }
 });
+
+module.exports = { app, server };

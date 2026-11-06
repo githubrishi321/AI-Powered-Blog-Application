@@ -39,3 +39,10 @@ temp/
 
 # Coverage reports
 coverage/
+
+# Local evaluation data containing private interview notes
+data/structure-eval.local.json
+
+# Local scratch and test suites
+scratch/
+

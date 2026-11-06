@@ -1,256 +1,173 @@
-# 📝 Blogify — AI-Powered Blog Application with Cloud Storage & Admin Panel
+# 📝 Blogify — Student Interview Experiences & Community Blogging Platform
 
-> A production-ready, full-stack blogging platform where writers can create, read, and share stories — featuring an **AI Tone Converter** powered by Groq (LLaMA 3.3), **Persistent Cloud Cover Images** via Cloudinary with local fallback, and a **Comprehensive Admin Panel** for complete platform governance.
+> A full-stack web application designed to collect, structure, and explore real campus placement and internship interview experiences alongside general tech blogs — featuring **AI-assisted note structuring**, an **AI Tone Converter**, **company interview statistics**, **anonymity guarantees**, and an **editorial governance Admin Panel**.
 
-![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-22+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-5.x-000000?style=for-the-badge&logo=express&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose_8-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![EJS](https://img.shields.io/badge/EJS-Templates-B4CA65?style=for-the-badge&logo=ejs&logoColor=black)
-![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-F55036?style=for-the-badge&logo=fastapi&logoColor=white)
-![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
-![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)
-
-![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express.js](https://img.shields.io/badge/Express.js-5.x-000000?style=for-the-badge&logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose_8-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
-![EJS](https://img.shields.io/badge/EJS-Templates-B4CA65?style=for-the-badge&logo=ejs&logoColor=black)
-![Cloudinary](https://img.shields.io/badge/Cloudinary-Cloud_Storage-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
-![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-F55036?style=for-the-badge&logo=fastapi&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-openai%2Fgpt--oss--120b-F55036?style=for-the-badge)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
 ![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)
 
 ---
 
-## 📌 Description
+## 📌 The Problem
 
-**Blogify** is a modern, full-stack publishing web application built on **Node.js**, **Express v5**, **MongoDB**, and **EJS**. The application empowers users to register, publish rich blog posts, upload cover images, and engage in authenticated comment discussions.
+College placement and job interview experiences are traditionally scattered across ephemeral messaging channels, informal chat groups, and fragmented personal posts. Because these posts lack a consistent structure:
+- Key details (interview rounds, specific question types, difficulty levels, drive type) are often left out.
+- Junior students cannot easily filter past experiences by company, role, or hiring round type.
+- Aggregated company insights (typical round formats, overall difficulty trends) cannot be calculated without manual data collation.
 
-Blogify stands out through its **AI Tone Converter**, which rewrites blog drafts on demand into 5 distinct writing styles using the ultra-fast **Groq API** running `llama-3.3-70b-versatile`. 
-
-To ensure long-term stability and security, Blogify features an enterprise-grade **Admin Panel** (`/admin`) for user management, editorial moderation, AI parameter configuration, and tamper-evident audit logging, alongside a **resilient image storage architecture** that prevents broken covers on ephemeral cloud hosting platforms like Render.
+**Blogify** addresses this challenge by providing a dedicated, structured interview experience platform alongside standard editorial blogging. Candidates can submit their hiring journeys either via a guided multi-round form or by pasting raw interview notes for AI-assisted structure extraction, with optional author anonymity to encourage candid, honest sharing.
 
 ---
 
 ## ✨ Features
 
-### 👤 Public & Writer Features
-- 🔐 **User Authentication** — Secure sign up, sign in, and logout using JWT stored in HTTP-only, `SameSite=Strict` cookies.
-- 📝 **Blog Publishing** — Write and share rich blog posts with titles, bodies, and cover images.
-- 🖼️ **Resilient Cover Images** — Seamless cloud storage via Cloudinary with automatic local fallback in development and safe placeholder guards.
-- 💬 **Interactive Comments** — Authenticated discussion threads on every blog post with author details.
-- 🤖 **AI Tone Converter** *(Groq LLaMA 3.3)* — Real-time content transformation into 5 unique writing styles.
-- 📱 **Responsive Design** — Fully mobile-friendly layout built with Bootstrap 5 and modern custom styling.
+### 📝 Core Blogging & Authentication
+- **User Authentication**: Sign up, sign in, and logout using JWT stored in HTTP-only, `SameSite=Strict` cookies.
+- **Editorial Blogs**: Regular blogging workflow with markdown/rich bodies, titles, and cover images.
+- **Resilient Cover Images**: Persistent cloud storage via Cloudinary with automatic local fallback in development and safe placeholder guards.
+- **Community Discussions**: Authenticated comment threads on published articles.
 
-### 🛡️ Admin Panel (`/admin`)
-- 📊 **Executive Dashboard** — Metric cards (total users, 7d/30d signups, blogs, comments, AI calls, failed logins, banned accounts) and 30-day interactive Chart.js trend graphs.
-- 👥 **User Management** — Search, filter, paginate, create accounts, assign roles (`USER`/`ADMIN`), update statuses (`active`/`suspended`/`banned`), force logout sessions, and delete accounts (with cascade or author reassignment).
-- 🔑 **Secure Password Resets** — Admins can reset user passwords with a secure temporary password displayed once. Passwords remain one-way HMAC-SHA256 hashes and can never be viewed by admins.
-- 📰 **Blog Moderation** — Search, filter, edit title/body/author, replace or remove cover images, manage visibility status (`published`, `hidden`, `featured`), and perform bulk actions (publish, hide, delete).
-- 💬 **Comment Moderation** — Search across discussions, delete individual comments, or perform bulk removals.
-- 🤖 **AI Governance** — Global master toggle for AI, enable/disable specific tones, customize tone system prompts, configure model names, and set per-user daily conversion limits.
-- ⚙️ **Site Settings** — Manage site name, toggle open registrations, activate maintenance mode (with admin bypass), and configure image upload size and MIME type limits.
-- 🔒 **Security & Lockout** — Automated brute-force lockout after configurable failed attempts (`MAX_LOGIN_ATTEMPTS`), with admin manual unlock capabilities.
-- 📋 **Authentication History** — Audit trail of login attempts logging user IDs, attempted emails, outcome status, IP addresses, user agents, and failure reasons (invalid email formats are not stored as users).
-- 📜 **Immutable Audit Trail** — Tamper-evident, read-only system log recording every administrative write action with before-and-after diffs (secrets filtered).
+### 🎓 Interview Experiences
+- **Structured Experience Form**: Dedicated submission flow capturing company name, role, graduation/drive year, drive type (*on-campus*, *off-campus*, *internship*), self-reported difficulty rating (1 to 5), and outcome (*selected*, *rejected*, *waiting*, *undisclosed*).
+- **Multi-Round Breakdown**: Flexible multi-round logging with round types (*OA*, *coding*, *technical*, *system-design*, *behavioral*, *hr*, *other*), round descriptions, and specific question lists.
+- **Anonymous Posting**: Authors can toggle complete anonymity. When enabled, the public UI strips author name, email, profile avatar, and user ID.
+- **Community Reports**: Built-in reporting system allowing authenticated readers to flag inappropriate or abusive posts with a reason and optional note.
+- **Directory & Filters**: Filter published experiences by company, difficulty, drive type, outcome, and verification status.
 
----
+### 🏢 Company Pages & Aggregated Statistics
+- **Company Directory (`/companies`)**: Searchable index of organizations with interview records.
+- **Minimum Threshold for Stats**: Statistical metric cards (round breakdowns, average difficulty, outcome distributions) appear **only when 3 or more published experiences** exist for that company.
+- **Sample Attribution**: Company statistics are always explicitly labelled as *"Based on N experiences"* along with a clear notice that outcomes reflect only candidates who chose to share their results.
+- **Zero-Experience Safety**: Direct links to companies with zero published experiences return a friendly 404 page rather than empty or unstyled pages.
 
-## 🛡️ Admin Panel Deep Dive
+### 🤖 AI-Powered Capabilities
+- **Structure My Notes**: Converts unstructured, pasted student interview notes into a draft experience populated with detected company, role, year, drive type, outcome, and round breakdowns.
+- **AI Tone Converter**: On-demand draft rewriting into 5 distinct writing styles (*Professional*, *Casual*, *Social*, *Polite*, *Emojify*) powered by Groq.
+- **Human-in-the-Loop Review**: AI never publishes posts automatically. Extracted fields populate form inputs for mandatory author review and manual difficulty selection before submission.
 
-The Admin Panel lives under the `/admin` prefix and provides site administrators with complete operational control.
+### 🛡️ Moderation & Editorial Governance
+- **Central Moderation Service**: All status changes (*hide*, *publish*, *feature*, *verify*) pass through unified, audit-logged moderation workflows.
+- **Report Queue (`/admin/reports`)**: Paginated moderation dashboard grouping open reports by post, displaying moderator actions with confirmation modals.
+- **Verified Badge**: Moderators can mark reviewed posts with a badge displaying the exact disclaimer:
+  > *"Verified: a Blogify moderator checked this experience. It is not a guarantee that every detail is correct."*
+- **Owner Transparency**: When a post is hidden by moderators, the author sees a clear banner on their detail and personal listing pages (*"Hidden by moderators: [Reason]"*), while public viewers receive a standard 404.
+- **Author Identity Exposure to Moderators**: Author names and emails are transparent to administrators on the moderation review page (even for anonymous posts) to facilitate accountability.
 
-```
-/admin
-├── /dashboard        # Platform metrics & 30-day analytics charts
-├── /users            # User management, role changes, bans, password resets
-├── /blogs            # Blog moderation, status controls, bulk actions
-├── /comments         # Comment moderation & bulk deletion
-├── /ai               # AI Tone Converter toggle, prompts, models, limits & logs
-├── /settings         # Registration toggles, maintenance mode, upload rules
-├── /login-activity   # Authentication attempt history & failure diagnostics
-└── /audit-log        # Tamper-evident administrative action audit trail
-```
+### 🏢 Company Management & Deduplication
+- **Company Admin Index (`/admin/companies`)**: Directory of tracked companies with post counts, alias counts, and slug edit tools.
+- **Safe Merging**: Merge duplicate companies (e.g., "Google Inc." into "Google") using atomic database operations that move all referencing experiences, preserve previous slugs as 301 redirects, migrate aliases up to a 100-alias limit, and prevent circular references.
 
-### 📋 Feature Matrix
+### 👑 Platform Governance (Admin Panel)
+- **Executive Dashboard (`/admin/dashboard`)**: Metric cards for users, blogs, experiences, open reports, unverified posts, and failed logins.
+- **User Management (`/admin/users`)**: Search, paginate, create accounts, assign roles (`USER`/`ADMIN`), force logout sessions, unlock brute-force locked accounts, or perform safe password resets.
+- **Tamper-Evident Audit Trail (`/admin/audit-log`)**: Read-only log recording every administrative mutation with actor ID, target, IP address, and timestamps.
 
-| Domain | Capabilities | Endpoint |
-|---|---|---|
-| **Dashboard** | Total users, active users, 7d/30d signups, total blogs, comments, AI calls, failed logins, banned accounts, and interactive Chart.js graphs | `GET /admin/dashboard` |
-| **Users** | Search, filter by role/status, pagination, create user, edit profile, assign roles (`USER`/`ADMIN`), change status (`active`/`suspended`/`banned`), force logout, reset password (temp password shown once), manual unlock, and delete | `GET /admin/users`<br>`POST /admin/users/create`<br>`POST /admin/users/:id/edit`<br>`POST /admin/users/:id/reset-password`<br>`POST /admin/users/:id/force-logout`<br>`POST /admin/users/:id/unlock`<br>`POST /admin/users/:id/delete` |
-| **Blogs** | Filter by author/status, search by title/body, edit blog details, replace/delete covers, toggle visibility (`published`/`hidden`/`featured`), delete single, bulk delete/hide/publish | `GET /admin/blogs`<br>`GET /admin/blogs/:id/edit`<br>`POST /admin/blogs/:id/edit`<br>`POST /admin/blogs/:id/delete`<br>`POST /admin/blogs/bulk` |
-| **Comments** | Search comment content, filter by author, delete single comment, bulk delete comments | `GET /admin/comments`<br>`POST /admin/comments/:id/delete`<br>`POST /admin/comments/bulk` |
-| **AI Governance** | Toggle AI globally, enable/disable individual tones, edit tone system prompts, configure model (`llama-3.3-70b-versatile`), set max input length, configure daily per-user limits, view AI call logs with latency | `GET /admin/ai`<br>`POST /admin/ai/save`<br>`GET /admin/ai/logs` |
-| **Site Settings** | Update site name, open/close registrations, toggle maintenance mode (admins bypass), set max upload file size and allowed image types | `GET /admin/settings`<br>`POST /admin/settings/save` |
-| **Login Activity** | Paginated audit log of successful and failed authentication attempts with client IP, user agent, and failure reason | `GET /admin/login-activity` |
-| **Audit Log** | Immutable, read-only system log capturing administrative actions (user modifications, blog edits, deletions, settings changes) with IP and before/after diffs | `GET /admin/audit-log` |
-
-### 🔐 How Admin Access Works
-1. **Database-Checked Permissions**: Every incoming request to `/admin` passes through the `requireAdmin` middleware. The middleware queries MongoDB directly on every request to verify `role === "ADMIN"` and `status === "active"`. The role claimed in the JWT payload is never trusted on its own.
-2. **Session Invalidation**: Bumping `tokenVersion` on user logout, ban, force logout, or password reset invalidates all existing JWT tokens immediately.
-3. **Self-Protection Rules**: Administrators cannot delete themselves, ban themselves, or demote their own account. Furthermore, the last remaining administrator on the platform cannot be deleted or demoted.
-4. **Zero-Knowledge Password Security**: User passwords are stored as one-way HMAC-SHA256 hashes with salt. Administrators cannot view existing user passwords. When an admin initiates a password reset, a secure temporary password is generated, hashed, saved, and presented **once** on the admin confirmation screen.
-5. **No-Store Headers**: Admin responses automatically send `Cache-Control: no-store, no-cache, must-revalidate` to prevent sensitive admin data from being cached by web browsers or intermediate proxies.
-
-### 👑 Creating the Initial Admin
-To create or promote the first administrator safely without exposing credentials:
-
-```bash
-# Set credentials in your environment or .env
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=YourSecurePassword123!
-ADMIN_NAME="Site Admin"
-
-# Run the seeding script
-npm run create-admin
-```
-
-If a user with `ADMIN_EMAIL` already exists, the script promotes them to `ADMIN`. If the user does not exist, a new administrative account is created.
+### 🧪 Demo Data Management
+- **CLI Seed & Cleanup Script (`scripts/seedDemo.js`)**: Fictional sample data generator for local demonstrations and testing, completely tag-isolated (`isDemo: true`) with zero impact on real audit or login records.
 
 ---
 
-## 📚 Application Route Reference
+## 🤖 How the AI Features Work
 
-### Public & Author Routes
-| Method | Path | Access | Description |
-|---|---|---|---|
-| `GET` | `/` | Public | Home page listing published blog stories |
-| `GET` | `/user/signup` | Public | Account registration form with live strength meter |
-| `POST` | `/user/signup` | Public | Creates a new user account (checks registration toggle) |
-| `GET` | `/user/signin` | Public | Login form with accessible password toggle |
-| `POST` | `/user/signin` | Public (Throttled) | Authenticates credentials, logs activity & sets JWT cookie |
-| `GET` | `/user/logout` | Authenticated | Clears JWT cookie, bumps `tokenVersion` & invalidates session |
-| `GET` | `/blog/add-new` | Authenticated | Form to author and submit a new blog post |
-| `POST` | `/blog` | Authenticated | Handles cover upload & creates blog in MongoDB |
-| `GET` | `/blog/:id` | Public | Full blog article reader view and comment thread |
-| `POST` | `/blog/comment/:blogId` | Authenticated | Submits a new comment on the specified article |
-| `POST` | `/ai/tone` | Public (Throttled) | AI Tone Converter API endpoint powered by Groq SDK |
-| `GET` | `/test-view` | Public (Debug) | Diagnostic template test view |
+Blogify integrates the official **Groq SDK** to run fast, deterministic inference against hosted large language models.
 
-### Administrative Routes (`/admin`)
-*(Guarded by `requireAdmin` database checks, rate limiting, and double-submit CSRF)*
-| Method | Path | Access | Description |
-|---|---|---|---|
-| `GET` | `/admin` | ADMIN | Redirects to `/admin/dashboard` |
-| `GET` | `/admin/dashboard` | ADMIN | Executive metrics & 30-day interactive analytics charts |
-| `GET` | `/admin/users` | ADMIN | Paginated user management table with role/status filters |
-| `GET` | `/admin/users/create` | ADMIN | New user creation form |
-| `POST` | `/admin/users/create` | ADMIN | Creates new user with assigned role |
-| `GET` | `/admin/users/:id` | ADMIN | User detail view and activity overview |
-| `GET` | `/admin/users/:id/edit` | ADMIN | User edit form |
-| `POST` | `/admin/users/:id/edit` | ADMIN | Updates user profile, role, or status |
-| `POST` | `/admin/users/:id/reset-password` | ADMIN | Generates one-time temporary password (shown once) |
-| `POST` | `/admin/users/:id/force-logout` | ADMIN | Invalidates active user session via `tokenVersion` |
-| `POST` | `/admin/users/:id/unlock` | ADMIN | Manually unlocks brute-force locked user account |
-| `POST` | `/admin/users/:id/delete` | ADMIN | Deletes user (with self-deletion & last-admin protection) |
-| `GET` | `/admin/blogs` | ADMIN | Content moderation list with status filters |
-| `GET` | `/admin/blogs/:id/edit` | ADMIN | Blog edit form |
-| `POST` | `/admin/blogs/:id/edit` | ADMIN | Updates blog title, body, author, or visibility status |
-| `POST` | `/admin/blogs/:id/delete` | ADMIN | Removes blog and cleans up cover from storage |
-| `POST` | `/admin/blogs/bulk` | ADMIN | Bulk publish, hide, or delete selected blogs |
-| `GET` | `/admin/comments` | ADMIN | Comment moderation table |
-| `POST` | `/admin/comments/:id/delete` | ADMIN | Removes individual comment |
-| `POST` | `/admin/comments/bulk` | ADMIN | Bulk deletes selected comments |
-| `GET` | `/admin/ai` | ADMIN | AI Tone Converter configuration interface |
-| `POST` | `/admin/ai/save` | ADMIN | Updates AI model, prompts, and rate limits in DB |
-| `GET` | `/admin/ai/logs` | ADMIN | AI request telemetry, character count & latency logs |
-| `GET` | `/admin/settings` | ADMIN | Platform settings (registrations, maintenance mode) |
-| `POST` | `/admin/settings/save` | ADMIN | Saves platform operational configuration |
-| `GET` | `/admin/login-activity` | ADMIN | Authentication history and diagnostic logs |
-| `GET` | `/admin/audit-log` | ADMIN | Immutable administrative write audit trail |
+### Model & Configuration
+- **Active Model**: `openai/gpt-oss-120b` (configured in `Settings.aiModel`).
+- **Retired Model Transition Note**: Groq retired `llama-3.3-70b-versatile` for free and developer tiers in August 2026. Blogify defaults to `openai/gpt-oss-120b`, and its service layer automatically maps any stored `llama-3.3-70b-versatile` references to `openai/gpt-oss-120b` at runtime without crashing.
+- **Temperature & Token Limits**: Temperature is set to `0.1` for deterministic note structuring (up to 2048 max output tokens) and `0.3` for tone conversion (up to 1024 max output tokens).
+- **Inference Mode**: Note structuring requests enforce strict JSON output via Groq's `{ type: "json_object" }` response format.
+
+### The "Structure My Notes" Workflow
+1. **Client Submission**: The candidate pastes raw interview notes into the structuring panel on `/experiences/new`.
+2. **Contact Redaction**: Before sending text to Groq, candidate contact info (emails, phone numbers, personal URLs) is redacted into `[REDACTED]` markers using regex heuristics.
+3. **Prompt Delimiters**: Raw user notes are isolated within distinct XML/triple-backtick delimiter fences to prevent prompt injection instructions from overriding system guidelines.
+4. **Structured Inference**: Groq processes the notes with a system prompt mandating JSON schema output adhering strictly to verifiable facts.
+5. **Whitelist Parsing & Sanitization**: The application validates and sanitizes the returned JSON via `parseAndSanitizeStructuredOutput`:
+   - Strips dangerous or unauthorized injected keys (`status`, `verified`, `anonymous`, `createdBy`, `title`, `story`).
+   - Ensures string values are cleaned of control characters and trimmed.
+6. **Grounding Verification Rules**:
+   | Field | Grounding Rule Enforced |
+   |---|---|
+   | **Outcome** | Requires an exact quoted phrase from the raw notes stored in `outcomeEvidence`. If the phrase does not appear verbatim, outcome resets to `null`. |
+   | **Company, Role, Year** | Must appear directly in the raw notes text; otherwise discarded. |
+   | **Difficulty** | **Never filled by AI**. Left blank for mandatory manual selection by the student. |
+   | **Numeric Bounds** | Round numbers and years must fall within valid bounds (e.g. 2020–current year). Out-of-range numbers are cleared, **never clamped**. |
+   | **Contact Details** | Any string field containing detected contact info (phone/email/link) is automatically discarded. |
+7. **Human Review**: Form fields are populated in the candidate's browser. Missing or ungrounded fields are flagged (*"AI could not find these in your notes..."*), and the candidate must manually confirm all fields before submitting.
+8. **Stored Metadata**: The application logs telemetry in `AiLog` (user ID, feature, model, execution time in ms, character counts, status). **Raw student notes and prompt text are never saved to the database.**
 
 ---
 
-## 🔒 Security Architecture
+## 🔒 Privacy & Security
 
-Blogify applies defense-in-depth principles across its full stack:
+Blogify implements defense-in-depth across the entire stack:
 
-- **HTTP Security Headers (Helmet v8)**: Custom Content Security Policy (CSP) allowing only sanctioned CDNs for Bootstrap and Font Awesome while defaulting `script-src-attr 'none'` to block malicious inline event handlers.
-- **CSRF Defense (`csrf-csrf`)**: Double-submit cookie CSRF tokens protect all administrative mutations (`POST`, `PUT`, `DELETE`). The token is made available to all views via `res.locals.csrfToken`.
-- **Brute-Force Rate Limiting (`express-rate-limit`)**:
-  - `signinLimiter`: Restricts signin attempts to 10 requests per 15-minute window per IP, skipping successful logins.
+### Verified Security Controls
+- **Helmet Security Headers**: Configured Content Security Policy (CSP) blocking unauthorized external sources and defaulting inline script protections.
+- **Double-Submit CSRF Defense (`csrf-csrf`)**: Generates CSRF tokens verified on all state-changing `POST` routes via the `x-csrf-token` header or form body.
+- **Multi-Tier Rate Limiting**:
+  - `signinLimiter`: Restricts failed logins to 10 requests per 15 minutes per IP.
   - `adminLimiter`: Restricts administrative operations to 120 requests per minute per IP.
-- **Account Lockout Protection**: Automatic account lockout triggered when failed login attempts exceed `MAX_LOGIN_ATTEMPTS` (default: 5). The account is locked for `LOCK_DURATION_MINUTES` (default: 15 minutes) or until manually unlocked by an administrator.
-- **Login Activity Logging**: Tracks user authentication attempts including IP address, user agent, and failure reason. Non-email strings or malformed inputs are flagged as `[invalid format]` and never created as ghost user records.
-- **HTTP-Only Cookies**: JWT tokens and session cookies are configured with `httpOnly: true`, `sameSite: "strict"`, and `secure: true` in production environments.
-- **Sanitized Audit Trails**: Administrative writes are recorded in `AuditLog` with before/after state diffs. All sensitive keys (passwords, salts, hashes, tokens, API keys) are filtered out prior to persistence.
-- **Maintenance Mode**: When maintenance mode is enabled via Site Settings, public routes return an informative HTTP 503 page, while authenticated administrators retain access.
+  - `reportLimiter`: Limits report submissions to 10 reports per hour per user/IP.
+  - `aiLimiter`: Daily quotas per user (default: 10 structure requests/day, 20 tone requests/day) evaluated in Indian Standard Time (IST).
+- **Brute-Force Account Lockout**: Accounts lock automatically after 5 consecutive failed attempts (`MAX_LOGIN_ATTEMPTS`) for 15 minutes (`LOCK_DURATION_MINUTES`).
+- **Sanitized Login Activity**: Authentication attempts are recorded with timestamp, IP, and user-agent. **Mistyped passwords are never stored**; invalid usernames are flagged as `[invalid format]`.
+- **Role Validation Against Database**: `requireAdmin` queries MongoDB directly on every request to verify `role === "ADMIN"` and `status === "active"`. The role claims in JWT cookies are never trusted on their own.
+- **Instant Session Invalidation**: User records maintain a `passwordChangedAt` timestamp. Resetting passwords or forcing logouts invalidates active JWT tokens immediately.
+- **Unified Public Anonymity Helper**: Public views access author details exclusively through `getPublicAuthor(blog)`. When `blog.experience.anonymous === true`, author name, email, avatar, and ID are omitted from public responses.
+- **Input Sanitization & Output Escaping**: All user-generated text is HTML-escaped through EJS `<%= %>` tags, and multi-line content preserves formatting via CSS `pre-wrap-text`.
+
+### Known Limitations
+- **Contact Info Filtering**: Built-in phone, email, and URL regex filters act as an active deterrent, but cannot guarantee detection of heavily obfuscated contact details.
+- **AI Extraction Accuracy**: LLM inference can produce inaccurate or incomplete interpretations; mandatory user form review is required before publishing.
+- **Anonymity Boundary**: Anonymous experiences protect author identity from the public and regular members, but author identities remain visible to platform administrators in `/admin/reports/:blogId` for accountability.
+- **Third-Party AI Processing**: When using AI features, redacted note excerpts are processed by the external inference provider (Groq).
+- **Password Hashing**: Passwords currently use salted HMAC-SHA-256 with a server-side salt.
 
 ---
 
-## 🖼️ Image Storage Architecture & Resilience
+## 🏗️ Architecture
 
-Blogify is designed to eliminate the class of bugs where blog covers disappear due to ephemeral cloud container disks (such as on Render free and standard tiers):
-
+### Request Flow
 ```
-                   ┌────────────────────────────────────────┐
-                   │ User Uploads Blog Cover (Multipart)     │
-                   └───────────────────┬────────────────────┘
-                                       │
-                                       ▼
-                   ┌────────────────────────────────────────┐
-                   │ Multer Memory Storage (RAM Buffer)     │
-                   └───────────────────┬────────────────────┘
-                                       │
-               ┌───────────────────────┴───────────────────────┐
-               ▼                                               ▼
-      [Production Mode]                              [Development Mode]
-  Is Cloudinary Configured?                     Is Cloudinary Configured?
-      ├── YES ──▶ Stream to Cloudinary              ├── YES ──▶ Stream to Cloudinary
-      └── NO  ──▶ Throw Fatal Error (Reject)        └── NO  ──▶ Save to public/uploads
+User / Browser
+   │
+   ▼
+[Trust Proxy] ──▶ [Helmet CSP & Security Headers]
+   │
+   ▼
+[Cookie & Body Parsers] ──▶ [Session & Flash]
+   │
+   ▼
+[CSRF Protection (csrf-csrf)] ──▶ [Authentication Cookie Check (JWT)]
+   │
+   ├── Public Routes (/experiences, /company/:slug, /blog/:id)
+   │     └── Controller ──▶ Query MongoDB ──▶ Anonymity Filter (getPublicAuthor) ──▶ EJS View
+   │
+   ├── Protected Routes (/experiences/new, /experiences/:id/report, /ai/*)
+   │     └── requireAuth / requireApiAuth ──▶ Rate Limiters ──▶ Controller / Groq SDK
+   │
+   └── Admin Routes (/admin/*)
+         └── adminLimiter ──▶ doubleCsrfProtection ──▶ requireAdmin (DB Lookup) ──▶ Admin Views
 ```
 
-### Storage Principles
-1. **Primary Cloud Storage**: Uploads use `multer.memoryStorage()`, streaming file buffers directly to **Cloudinary** and storing persistent HTTPS URLs along with `coverImagePublicId` in MongoDB.
-2. **Ephemeral Disk Guard**: When running in production (`NODE_ENV=production`), uploads are strictly prohibited from silently writing to ephemeral local disks if Cloudinary is not configured.
-3. **Local Development Fallback**: In development without Cloudinary credentials, uploads save to `public/uploads` with a unique timestamped, crypto-random filename.
-4. **Server-Side URL Resolver (`resolveCoverUrl`)**: All views render cover URLs via `resolveCoverUrl(blog)`. If a local image file is missing on disk or invalid, it returns `/Images/blog-placeholder.svg` instead of breaking the layout.
-5. **Client-Side Fallback Script (`public/js/image-fallback.js`)**: A non-inline fallback script catches runtime 404 network errors in the browser and swaps in the SVG placeholder without violating CSP.
-6. **Transaction Rollback**: If a database error occurs after an image is uploaded to Cloudinary, the uploaded image is deleted immediately to prevent orphaned storage waste.
+### Main Database Collections
 
-### Image Maintenance CLI Tools
-- **Integrity Check**:
-  ```bash
-  # Check all blog images for missing local files or broken remote URLs
-  npm run check-images
-
-  # Automatically repair broken covers by resetting them to placeholder
-  npm run check-images -- --fix
-  ```
-- **Cloudinary Migration**:
-  ```bash
-  # Preview migration of existing local uploads to Cloudinary
-  npm run migrate:images -- --dry-run
-
-  # Execute migration and update database records
-  npm run migrate:images
-  ```
-- **Manual CLI Cover Assignment**:
-  ```bash
-  node scripts/setCover.js <blogId> <path/to/image.png>
-  ```
-
----
-
-## 🤖 AI Tone Converter *(Star Feature)*
-
-Powered by the **Groq SDK** utilizing the state-of-the-art `llama-3.3-70b-versatile` model:
-
-| Tone | Description | Default Prompt Style |
+| Collection | Model File | Purpose |
 |---|---|---|
-| 🏢 **Professional** | Formal, authoritative business tone | Elevates vocabulary, removes slang, structures thoughts cleanly |
-| 😊 **Casual** | Friendly, relaxed, conversational | Writes like a friendly chat, simple words, warm cadence |
-| 📱 **Social** | Punchy, shareable, attention-grabbing | Short sentences, high engagement, adds contextual hashtags |
-| 🙏 **Polite** | Courteous, respectful, thoughtful | Considerate phrasing, warm expressions, respectful tone |
-| 😄 **Emojify** | Expressive and colorful | Naturally enriches text with relevant emojis while maintaining meaning |
-| 📄 **Original** | Unmodified text | Returns the original draft without alteration |
-
-### Dynamic Database Governance
-Unlike static implementations, Blogify's AI Tone Converter is dynamically managed via the Admin Panel:
-- **Master Switch**: Enable or disable the entire AI service with a single click.
-- **Per-Tone Control**: Enable/disable specific tones or write custom system prompts in `Settings.aiTones`.
-- **Model Flexibility**: Change the underlying Groq model ID in `Settings.aiModel` without redeploying code.
-- **Usage Limits**: Enforce maximum input lengths (`aiMaxInputLength`, default 5,000 chars) and per-user daily conversion limits (`aiDailyUserLimit`).
-- **Telemetry**: Every conversion logs user ID, tone, character length, execution latency (in ms), and status to `AiLog`.
+| `users` | `models/user.js` | User accounts, hashed passwords, roles (`USER`/`ADMIN`), statuses, and lockout timers |
+| `blogs` | `models/blog.js` | Editorial blogs and interview experiences (type, status, rounds, outcome, verification) |
+| `companies` | `models/company.js` | Normalized company directory, aliases, slugs, previous slugs, and merge pointers |
+| `reports` | `models/report.js` | Community reports on experiences with reason, note, status, and resolution metadata |
+| `comments` | `models/comment.js` | Article discussion comments linked to blogs and user authors |
+| `auditlogs` | `models/auditLog.js` | Tamper-evident admin action log recording mutations, IP addresses, and before/after states |
+| `loginactivities` | `models/loginActivity.js` | Historical authentication log recording success and failure outcomes |
+| `ailogs` | `models/aiLog.js` | Telemetry logs tracking AI feature usage, latency, model, and token metrics |
+| `settings` | `models/settings.js` | Singleton configuration for AI models, temperature, rate limits, and prompts |
 
 ---
 
@@ -258,186 +175,30 @@ Unlike static implementations, Blogify's AI Tone Converter is dynamically manage
 
 | Technology | Category | Purpose |
 |---|---|---|
-| **Node.js** (v20+) | Runtime | High-performance asynchronous JavaScript backend |
-| **Express.js v5** | Web Framework | Routing, middleware chaining, and HTTP request lifecycle |
-| **MongoDB + Mongoose v8** | Database & ODM | Schema-based document storage, indexes, and validation |
-| **Cloudinary SDK** | Cloud Storage | Persistent, resilient blog cover image hosting |
-| **EJS** | View Engine | Server-rendered dynamic HTML templates |
-| **Groq SDK** | AI Engine | Sub-second AI inference running LLaMA 3.3 70B |
-| **Helmet v8** | Security | HTTP response security headers and Content Security Policy |
-| **csrf-csrf** | Security | Double-submit cookie CSRF mitigation |
-| **express-rate-limit** | Security | Brute-force throttling for authentication and admin routes |
-| **express-validator** | Security | Request input validation and sanitization |
-| **Multer v2** | File Uploads | Memory-buffered multipart form parsing |
-| **JSON Web Tokens (JWT)** | Authentication | Secure cookie authentication with `tokenVersion` invalidation |
-| **Node.js Crypto** | Security | Salted HMAC-SHA256 password hashing |
-| **Bootstrap 5.3** | UI Framework | Responsive grids, navigation, modals, and utilities |
-| **Font Awesome 6** | Icons | Vector UI icons for navigation and actions |
-| **Chart.js** | Data Visualization | Interactive 30-day dashboard trend analytics |
-| **Render** | Cloud Hosting | Production deployment via `render.yaml` specification |
-
----
-
-## 📸 Screenshots
-
-| Page | Description | Preview |
-|---|---|---|
-| **Home Page** | Feed displaying published blogs with covers and stats | `![Home Page](./public/screenshots/home.png)` *(Placeholder)* |
-| **Blog Detail & AI Converter** | Reader view with interactive AI Tone Converter buttons | `![Blog Detail](./public/screenshots/blog-detail.png)` *(Placeholder)* |
-| **Create Blog** | Authoring interface with live image picker and tone preview | `![Create Blog](./public/screenshots/add-blog.png)` *(Placeholder)* |
-| **Admin Dashboard** | Executive metrics, recent activity feeds, and 30-day graphs | `![Admin Dashboard](./public/screenshots/admin-dashboard.png)` *(Placeholder)* |
-| **Admin User Manager** | User table with search, role filters, status badges, and actions | `![Admin Users](./public/screenshots/admin-users.png)` *(Placeholder)* |
-| **Admin Audit Log** | Tamper-evident administrative action log with diff summaries | `![Admin Audit Log](./public/screenshots/admin-audit-log.png)` *(Placeholder)* |
-
-> ℹ️ *Note: The screenshot paths above are placeholder references for your repository documentation.*
-
----
-
-## 🔑 Environment Variables
-
-The application reads the following environment variables. None are hardcoded, and secrets should never be committed to source control.
-
-| Variable | Required | Description | Example Placeholder |
-|---|---|---|---|
-| `PORT` | Optional | Port for the HTTP server to listen on (Default: `8000`) | `8000` |
-| `NODE_ENV` | Optional | Application runtime mode (`development` or `production`) | `development` |
-| `MONGO_URL` | **Required** in prod | MongoDB connection string URI (local or Atlas) | `mongodb://localhost:27017/blogify` |
-| `JWT_SECRET` | **Required** | Secret key for signing and verifying JWT authentication cookies | `your_jwt_secret_key_minimum_32_characters` |
-| `PASSWORD_SALT` | Recommended | Salt string for HMAC-SHA256 password hashing (Default: `secretKey`) | `your_secure_password_salt_string` |
-| `COOKIE_SECRET` | Optional | Secret for signing HTTP cookies (falls back to `JWT_SECRET`) | `your_cookie_signing_secret_string` |
-| `SESSION_SECRET` | Optional | Secret for signing session cookies (falls back to `JWT_SECRET`) | `your_session_secret_key_string` |
-| `MAX_LOGIN_ATTEMPTS` | Optional | Number of consecutive failed logins before account lockout (Default: `5`) | `5` |
-| `LOCK_DURATION_MINUTES` | Optional | Duration in minutes an account remains locked (Default: `15`) | `15` |
-| `GROQ_API_KEY` | **Required** for AI | API key for the Groq Cloud SDK inference service | `your_groq_api_key_here` |
-| `CLOUDINARY_CLOUD_NAME` | **Required** in prod | Cloudinary cloud name for persistent image hosting | `your_cloudinary_cloud_name` |
-| `CLOUDINARY_API_KEY` | **Required** in prod | Cloudinary API access key | `your_cloudinary_api_key` |
-| `CLOUDINARY_API_SECRET` | **Required** in prod | Cloudinary API access secret | `your_cloudinary_api_secret` |
-| `ADMIN_EMAIL` | **Required** for seed | Email address used by `npm run create-admin` | `admin@example.com` |
-| `ADMIN_PASSWORD` | **Required** for seed | Password used by `npm run create-admin` (min 6 characters) | `your_secure_admin_password_min_6_chars` |
-| `ADMIN_NAME` | Optional for seed | Full name used by `npm run create-admin` (Default: `Admin`) | `Site Admin` |
-
----
-
-## 📝 NPM Scripts
-
-All scripts configured in `package.json`:
-
-| Script | Command | Description |
-|---|---|---|
-| `start` | `node app.js` | Starts the production Express server on the configured `PORT` |
-| `dev` | `nodemon app.js` | Starts the local development server with hot-reloading on file edits |
-| `migrate` | `node scripts/migrate.js` | Safely backfills missing schema fields (`role`, `status`, `tokenVersion`) on existing documents |
-| `create-admin` | `node scripts/createAdmin.js` | Seeds or promotes the initial administrator account from environment variables |
-| `check-images` | `node scripts/checkImages.js` | Checks all blog covers for missing local files or broken URLs (supports `-- --fix`) |
-| `migrate:images`| `node scripts/migrateImages.js` | Migrates local blog cover images to Cloudinary storage (supports `-- --dry-run`) |
-
----
-
-## 📁 Folder Structure
-
-```
-Blog-Application/
-├── app.js                          # Express application setup, security & middleware
-├── package.json                    # Dependencies, metadata & lifecycle scripts
-├── package-lock.json               # Locked dependency tree
-├── render.yaml                     # Render infrastructure-as-code deployment blueprint
-├── .env.example                    # Documented template for environment variables
-├── .gitignore                      # Git ignored files & patterns
-│
-├── models/                         # Mongoose data schemas & validation
-│   ├── user.js                     # User schema (auth, HMAC-SHA256 hashing, lockout)
-│   ├── blog.js                     # Blog schema (content, coverImagePublicId, status)
-│   ├── comment.js                  # Discussion comment schema
-│   ├── settings.js                 # Site settings singleton (AI, limits, maintenance)
-│   ├── aiLog.js                    # Telemetry log for AI tone conversions
-│   ├── loginActivity.js            # Audit log for authentication attempts
-│   └── auditLog.js                 # Immutable audit log for administrative actions
-│
-├── routes/                         # Express controllers & routing
-│   ├── user.js                     # Public auth routes (signup, signin, logout)
-│   ├── blog.js                     # Blog viewing, publishing & commenting
-│   ├── ai.js                       # AI tone conversion API endpoint
-│   ├── admin.js                    # Admin router mount & requireAdmin guard
-│   └── admin/                      # Modular admin controllers
-│       ├── dashboard.js            # Dashboard metrics & 30-day analytics charts
-│       ├── users.js                # User CRUD, role changes, bans, password resets
-│       ├── blogs.js                # Blog moderation, status toggles & bulk actions
-│       ├── comments.js             # Comment moderation & bulk removals
-│       ├── ai.js                   # AI settings, custom prompts & conversion logs
-│       ├── settings.js             # Site-wide settings (maintenance, registrations)
-│       ├── loginActivity.js        # Authentication history viewer
-│       └── auditLog.js             # System audit trail viewer
-│
-├── middlewares/                    # Custom Express middlewares
-│   ├── authentication.js           # JWT cookie parsing & user context binding
-│   └── requireAdmin.js             # Admin role database check & no-store headers
-│
-├── services/                       # Business logic & external API integrations
-│   ├── authentication.js           # JWT signing and verification service
-│   ├── imageStorage.js             # Cloudinary upload, local fallback & URL resolver
-│   ├── ai.js                       # Groq SDK client & tone prompt converter
-│   ├── settings.js                 # In-memory cached site settings service
-│   └── auditLogger.js              # Sanitized administrative action logger
-│
-├── scripts/                        # Maintenance & CLI automation scripts
-│   ├── createAdmin.js              # Initial administrator seeding script
-│   ├── migrate.js                  # Safe database schema migration script
-│   ├── checkImages.js              # Image health check & integrity repair tool
-│   ├── migrateImages.js            # Local image to Cloudinary migration utility
-│   └── setCover.js                 # CLI utility to attach/recover a blog cover image
-│
-├── views/                          # Server-rendered EJS templates
-│   ├── home.ejs                    # Public home page with story feed
-│   ├── blog.ejs                    # Blog detail view with AI tone converter UI
-│   ├── addBlog.ejs                 # Blog creation form with tone selector
-│   ├── signin.ejs                  # Sign in page with accessible password toggle
-│   ├── signup.ejs                  # Sign up page with password strength bar
-│   ├── error.ejs                   # Standardized error presentation view
-│   ├── partials/                   # Reusable site partials
-│   │   ├── head.ejs                # HTML head, stylesheets & meta tags
-│   │   ├── nav.ejs                 # Global navigation bar with user dropdown
-│   │   ├── footer.ejs              # Global footer component
-│   │   └── scripts.ejs             # Global JavaScript bundles
-│   └── admin/                      # Admin Panel views
-│       ├── layout.ejs              # Admin base layout wrapper
-│       ├── dashboard.ejs           # Admin analytics dashboard
-│       ├── partials/               # Admin sidebar, topbar, styles, flash
-│       ├── users/                  # User list, create, edit, and detail views
-│       ├── blogs/                  # Blog list and edit views
-│       ├── comments/               # Comment management list view
-│       ├── ai/                     # AI settings control & telemetry logs
-│       ├── settings/               # Platform settings configuration view
-│       ├── loginActivity/          # Authentication activity audit view
-│       └── auditLog/               # Administrative audit trail view
-│
-└── public/                         # Public static assets
-    ├── css/                        # CSS stylesheets
-    │   ├── main.css                # Global styles, navbar stacking & form fields
-    │   └── admin.css               # Admin panel styling & components
-    ├── js/                         # Client-side JavaScript
-    │   ├── admin.js                # Admin charts, search filters, bulk actions
-    │   ├── image-fallback.js       # CSP-compliant broken image fallback handler
-    │   ├── password-toggle.js      # Accessible show/hide password toggle logic
-    │   └── signup.js               # Dynamic password strength meter
-    ├── Images/                     # Static icons, defaults & placeholder
-    │   ├── blog-placeholder.svg    # Resilient cover image fallback placeholder
-    │   ├── fevicon.png             # Application favicon
-    │   ├── default.png             # Default user avatar PNG
-    │   └── default.svg             # Default user avatar SVG
-    └── uploads/                    # Local image uploads (development fallback)
-```
+| **Node.js** (v22+) | Runtime | Asynchronous JavaScript runtime environment |
+| **Express.js v5** | Web Framework | Request routing, security middleware, and HTTP lifecycle |
+| **MongoDB + Mongoose v8**| Database & ODM | Schema validation, compound indexes, and document persistence |
+| **Groq SDK** | AI Engine | Fast inference running `openai/gpt-oss-120b` |
+| **Cloudinary SDK** | Cloud Storage | Persistent image storage for production blog covers |
+| **EJS** | Template Engine | Server-side HTML rendering with strict output escaping |
+| **Helmet v8** | Security Headers | Content Security Policy (CSP) and defense headers |
+| **csrf-csrf** | CSRF Protection | Double-submit cookie CSRF mitigation |
+| **express-rate-limit** | Throttling | Request rate limiting on signin, admin, report, and AI endpoints |
+| **Bootstrap 5.3** | UI Framework | Responsive UI layouts, modals, tables, and navigation |
+| **Font Awesome 6** | Iconography | Visual UI symbols and action indicators |
+| **Chart.js** | Data Visualization | 30-day analytics charts in the admin dashboard |
 
 ---
 
 ## ⚙️ Installation & Setup
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v20.x or above recommended)
-- [MongoDB](https://www.mongodb.com/) (Local server or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
-- A free [Groq API Key](https://console.groq.com/) for the AI Tone Converter
+- [Node.js](https://nodejs.org/) (v22.x or above)
+- [MongoDB](https://www.mongodb.com/) (Local installation or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
+- A free [Groq API Key](https://console.groq.com/) for AI structuring and tone conversion
 - A free [Cloudinary Account](https://cloudinary.com/) (Required for production deployments; optional for local development)
 
-### Step-by-Step Instructions
+### Step-by-Step Setup
 
 1. **Clone the Repository**:
    ```bash
@@ -451,52 +212,216 @@ Blog-Application/
    ```
 
 3. **Configure Environment Variables**:
-   Copy `.env.example` to `.env`:
+   Copy the example environment configuration:
    ```bash
    cp .env.example .env
    ```
-   Open `.env` and configure your credentials. At minimum for local development:
-   - `JWT_SECRET`: A secure random string.
-   - `GROQ_API_KEY`: Your Groq Cloud API key.
-   - `ADMIN_EMAIL` & `ADMIN_PASSWORD`: Credentials for your initial administrator account.
+   Open `.env` in your editor and provide valid values for your database connection (`MONGO_URL`), secrets (`JWT_SECRET`, `PASSWORD_SALT`), and your `GROQ_API_KEY`.
 
-4. **Run Database Migrations**:
-   Backfill schema defaults across existing documents:
+4. **Seed the Initial Administrator**:
+   To create the first platform administrator:
    ```bash
-   npm run migrate
+   ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=YourAdminPassword123! ADMIN_NAME="Site Admin" npm run create-admin
    ```
 
-5. **Seed the Initial Administrator**:
+5. **Start the Application**:
    ```bash
-   npm run create-admin
-   ```
-
-6. **Start the Development Server**:
-   ```bash
+   # Development mode with hot-reload
    npm run dev
+
+   # Production mode
+   npm start
    ```
 
-7. **Explore the Application**:
+6. **Access the Application**:
    - Public Website: [http://localhost:8000](http://localhost:8000)
+   - Interview Experiences: [http://localhost:8000/experiences](http://localhost:8000/experiences)
    - Sign In: [http://localhost:8000/user/signin](http://localhost:8000/user/signin)
-   - Admin Panel: [http://localhost:8000/admin](http://localhost:8000/admin) *(Log in using your `ADMIN_EMAIL` and `ADMIN_PASSWORD`)*
+   - Admin Panel: [http://localhost:8000/admin](http://localhost:8000/admin) *(Sign in using your administrator credentials)*
+
+7. **Optional: Seed Demo Data**:
+   To populate the application with fictional sample companies, experiences, comments, and reports for demonstration:
+   ```bash
+   npm run seed:demo
+   ```
 
 ---
 
-## 🚀 Usage Guide
+## 🔑 Environment Variables
 
-### For Authors and Readers
-1. **Create an Account**: Visit `/user/signup` to register. Type a password to view the dynamic password strength meter.
-2. **Publish a Blog**: Navigate to **Add Blog** (`/blog/add-new`). Enter a title, write your story, and attach a cover image.
-3. **Transform with AI**: While writing or viewing your blog, select one of the AI tone options (**Professional**, **Casual**, **Social**, **Polite**, **Emojify**) and click **Apply** to instantly rewrite the content.
-4. **Engage with Comments**: Open any blog to read the story and participate in discussion threads.
+The table below lists all environment variables read by the application codebase:
 
-### For Site Administrators
-1. **Access Governance**: Log in with your admin account and click **Admin Panel** in the user dropdown or navigate to `/admin`.
-2. **Review Analytics**: Monitor real-time metrics, signup trends, and AI consumption on `/admin/dashboard`.
-3. **Moderate Content**: Navigate to `/admin/blogs` or `/admin/comments` to feature high-quality posts, hide spam, or perform bulk removals.
-4. **Manage Accounts**: View `/admin/users` to suspend abusive users, reset forgotten passwords with one-time temporary keys, or unlock accounts locked by brute-force defenses.
-5. **Tune AI & Platform Rules**: Visit `/admin/ai` to customize tone prompts or adjust daily limits, and visit `/admin/settings` to toggle open registration or enable maintenance mode.
+| Variable | Required | Description | Example Placeholder |
+|---|---|---|---|
+| `PORT` | Optional | Port for the HTTP server (Default: `8000`) | `8000` |
+| `NODE_ENV` | Optional | Runtime environment (`development` or `production`) | `development` |
+| `MONGO_URL` | **Required** in prod | MongoDB connection URI string | `mongodb://localhost:27017/blogify` |
+| `JWT_SECRET` | **Required** | Secret key for signing and verifying authentication tokens | `your_jwt_secret_key_minimum_32_characters` |
+| `PASSWORD_SALT` | **Required** | Server-side salt used for HMAC-SHA-256 password hashing | `your_password_salt_string` |
+| `COOKIE_SECRET` | Optional | Secret for signing HTTP cookies (falls back to `JWT_SECRET`) | `your_cookie_signing_secret_string` |
+| `SESSION_SECRET` | Optional | Secret for signing session cookies (falls back to `JWT_SECRET`) | `your_session_secret_key_string` |
+| `MAX_LOGIN_ATTEMPTS` | Optional | Consecutive failed logins before account lockout (Default: `5`) | `5` |
+| `LOCK_DURATION_MINUTES` | Optional | Account lockout duration in minutes (Default: `15`) | `15` |
+| `GROQ_API_KEY` | **Required** for AI | API key for the Groq Cloud inference service | `your_groq_api_key_here` |
+| `CLOUDINARY_CLOUD_NAME` | **Required** in prod | Cloudinary cloud account name | `your_cloudinary_cloud_name` |
+| `CLOUDINARY_API_KEY` | **Required** in prod | Cloudinary API access key | `your_cloudinary_api_key` |
+| `CLOUDINARY_API_SECRET` | **Required** in prod | Cloudinary API access secret | `your_cloudinary_api_secret` |
+| `ADMIN_EMAIL` | Optional (seed) | Administrator email for `npm run create-admin` | `admin@example.com` |
+| `ADMIN_PASSWORD` | Optional (seed) | Administrator password for `npm run create-admin` | `your_admin_password_min_6_chars` |
+| `ADMIN_NAME` | Optional (seed) | Administrator full name for `npm run create-admin` | `Site Admin` |
+
+---
+
+## 🛡️ Admin Panel
+
+The Admin Panel (`/admin`) provides comprehensive platform control:
+
+- **Dashboard (`/admin/dashboard`)**: Metric overview of total users, published stories, interview experiences, open reports, unverified experiences, and recent activity.
+- **Moderation Queue (`/admin/reports`)**: Lists reported posts grouped by experience. Moderators can inspect reports, view author identity even on anonymous posts, and execute actions (*dismiss*, *hide*, *publish*, *feature*, *unfeature*, *verify*, *unverify*, *delete*).
+- **Blog & Experience Moderation (`/admin/blogs`)**: Filter by type (*all*, *blog*, *experience*), verification status, or author. Supports bulk delete, hide, publish, and bulk verification for experiences.
+- **Company Directory (`/admin/companies`)**: Rename companies, update slugs with automatic redirect creation, manage aliases, and safely merge duplicate organizations.
+- **AI Governance (`/admin/ai`)**: Configure the active AI model name (`openai/gpt-oss-120b`), adjust temperature, update system prompts, set daily per-user usage limits, and inspect telemetry logs.
+- **User Management (`/admin/users`)**: Search accounts, assign administrative privileges, unlock locked accounts, or perform safe password resets.
+- **Audit Log (`/admin/audit-log`)**: Immutable, read-only system trail recording administrative write operations.
+
+> **Password Security Note**: Administrators can trigger a one-time password reset for users, but **can never view existing passwords**. The temporary password is generated, hashed with salt, and displayed to the administrator exactly once.
+
+---
+
+## 🧪 Demo Data Management
+
+Blogify includes a built-in demo data management script (`scripts/seedDemo.js`) to populate the platform with sample content for demonstration:
+
+```bash
+# Preview what would be created without writing to database
+npm run seed:demo -- --dry-run
+
+# Seed demo data into your development database
+npm run seed:demo
+
+# Remove all demo data and restore clean state
+npm run seed:demo -- --remove
+
+# Running on a custom database name requires explicit confirmation
+node scripts/seedDemo.js --confirm-db my_custom_db
+```
+
+### Safety & Labeling Rules
+- **Database Safety Guard**: Refuses execution unless the database name ends with `_dev`, `_test`, or `_demo`, unless `--confirm-db <NAME>` matches the target database name exactly.
+- **Fictional Data Only**: Generates 4 fictional companies (*AcroVibe Dynamics*, *QuantumPulse Logic*, *SolarisSphere Tech*, *VerdantPeak Systems*), 2 demo users (*Demo Student*, *Demo Reader*), 15 structured experiences, comments, and reports.
+- **Demo Badges**: All demo content displays clear `[Demo]` badges, and public demo pages emit `<meta name="robots" content="noindex, nofollow">` tags.
+- **Inability to Sign In**: Demo accounts are assigned random runtime passwords and blocked at the login route with standard invalid credentials responses.
+- **Real Company Collision Protection**: If an active company without `isDemo` already has a demo company's name or normalized key, the seeder skips that company AND all demo experiences, comments, and reports belonging to it, prints a clear message, and never attaches demo content to a real company.
+- **Preservation on Remove**: If a real user creates an authentic post referencing a demo company name, running `--remove` cleans up the demo experiences while preserving the company, unsetting its `demoKey`, and setting `isDemo: false`.
+
+---
+
+## 📜 NPM Scripts
+
+| Script | Command | Description |
+|---|---|---|
+| `start` | `node app.js` | Starts the production Express server |
+| `dev` | `nodemon app.js` | Starts local development server with hot-reload |
+| `migrate` | `node scripts/migrate.js` | Backfills legacy schema defaults |
+| `create-admin` | `node scripts/createAdmin.js` | Creates or promotes the initial administrator account |
+| `check-images` | `node scripts/checkImages.js` | Audits blog cover images for missing local files or broken URLs |
+| `migrate:images` | `node scripts/migrateImages.js` | Migrates local uploads in `public/uploads` to Cloudinary |
+| `migrate:experience` | `node scripts/migrateExperienceType.js` | Backfills legacy blog posts with explicit type annotations |
+| `eval:structure` | `node scripts/evalStructure.js` | Runs quantitative benchmark evaluation for AI note structuring |
+| `check-ai` | `node scripts/checkAi.js` | Validates Groq API connectivity and test prompt inference |
+| `seed:demo` | `node scripts/seedDemo.js` | Seeds and cleans up fictional demo data (`--dry-run`, `--remove`) |
+
+---
+
+## 📁 Folder Structure
+
+```
+Blog-Application/
+├── app.js                          # Express app configuration, security middleware, and route mounting
+├── package.json                    # Project dependencies, metadata, and lifecycle scripts
+├── package-lock.json               # Locked dependency version tree
+├── render.yaml                     # Render infrastructure-as-code deployment specification
+├── .env.example                    # Template for environment variables
+├── .gitignore                      # Git ignored files and directories
+│
+├── data/                           # Evaluation datasets
+│   ├── STRUCTURE-EVAL-README.md    # Documentation for structure evaluation dataset
+│   └── structure-eval.json         # Synthetic benchmark examples marked "example": true
+│
+├── middlewares/                    # Express middlewares
+│   ├── authentication.js           # JWT cookie parser and user context binding
+│   ├── csrf.js                     # Double-submit cookie CSRF middleware (csrf-csrf)
+│   └── requireAdmin.js             # Database-backed administrator role verification
+│
+├── models/                         # Mongoose data models
+│   ├── aiLog.js                    # Telemetry log for AI tone and structure operations
+│   ├── auditLog.js                 # Immutable audit trail for administrative actions
+│   ├── blog.js                     # Blog & interview experience schema (rounds, outcome, status)
+│   ├── comment.js                  # Article discussion comment schema
+│   ├── company.js                  # Company directory schema (slugs, aliases, mergedInto)
+│   ├── loginActivity.js            # Authentication history log (IP, user-agent, status)
+│   ├── report.js                   # Community report schema with resolution states
+│   ├── settings.js                 # Singleton settings document (AI models, prompts, limits)
+│   └── user.js                     # User account schema (HMAC-SHA-256 auth, lockout, status)
+│
+├── routes/                         # Express route controllers
+│   ├── admin.js                    # Admin router root mount
+│   ├── admin/                      # Admin controllers
+│   │   ├── ai.js                   # AI settings, prompts, model management, and logs
+│   │   ├── auditLog.js             # Audit trail inspection
+│   │   ├── blogs.js                # Editorial blog & experience moderation and bulk actions
+│   │   ├── comments.js             # Discussion comment moderation
+│   │   ├── companies.js            # Company management, alias editing, and deduplication
+│   │   ├── dashboard.js            # Executive metrics and statistics
+│   │   ├── loginActivity.js        # Authentication history viewer
+│   │   ├── reports.js              # Community report queue and moderation actions
+│   │   ├── settings.js             # Site-wide settings
+│   │   └── users.js                # User management, role updates, and password resets
+│   ├── ai.js                       # AI tone conversion and note structuring endpoints
+│   ├── blog.js                     # Standard blog viewing, publishing, and comments
+│   ├── company.js                  # Public company index and company detail views
+│   ├── experience.js               # Interview experience browsing, submission, and reporting
+│   └── user.js                     # User registration, signin, and logout
+│
+├── services/                       # Business logic and external integrations
+│   ├── ai.js                       # Groq SDK client wrapper, structuring, and tone prompts
+│   ├── anonymity.js                # Central public author resolution (getPublicAuthor)
+│   ├── auditLogger.js              # Administrative write audit logging service
+│   ├── authentication.js           # JWT token generation, verification, and HMAC hashing
+│   ├── blogCleanup.js              # Cascading delete service for blogs, comments, and covers
+│   ├── company.js                  # Company normalization, slug management, and atomic merge
+│   ├── experienceInput.js          # Input sanitization, validation schemas, and contact info detection
+│   ├── imageStorage.js             # Cloudinary upload, local fallback, and URL resolver
+│   ├── moderation.js               # Unified status and verification transitions
+│   └── settings.js                 # In-memory cached settings service
+│
+├── scripts/                        # Maintenance and automation scripts
+│   ├── checkAi.js                  # Verifies Groq API connectivity and inference
+│   ├── checkImages.js              # Audits cover images for missing files or broken URLs
+│   ├── createAdmin.js              # Creates or promotes the initial administrator account
+│   ├── evalStructure.js            # Quantitative evaluation benchmark for note structuring
+│   ├── migrate.js                  # Schema default migration script
+│   ├── migrateExperienceType.js    # Experience type annotation migration
+│   ├── migrateImages.js            # Local image upload to Cloudinary migration utility
+│   ├── seedDemo.js                 # Demo data seed and cleanup tool
+│   └── setCover.js                 # CLI helper to assign cover images
+│
+├── views/                          # Server-rendered EJS templates
+│   ├── addBlog.ejs                 # Standard blog authoring view
+│   ├── blog.ejs                    # Blog article reader view
+│   ├── error.ejs                   # Standardized error presentation view
+│   ├── home.ejs                    # Public landing page with featured content
+│   ├── admin/                      # Admin panel template suite
+│   ├── company/                    # Company directory and profile views
+│   ├── experiences/                # Interview experience browsing, detail, and form views
+│   └── partials/                   # Reusable UI partials (nav, head, footer, flash)
+│
+└── public/                         # Public static assets (CSS, client JS, images)
+    ├── css/                        # Custom stylesheets (main.css, admin.css)
+    ├── Images/                     # Static icons, defaults, and placeholder SVGs
+    ├── js/                         # Client JavaScript (form validation, moderation modals)
+    └── uploads/                    # Local image uploads (development mode only)
+```
 
 ---
 
@@ -504,120 +429,100 @@ Blog-Application/
 
 Blogify includes an infrastructure-as-code blueprint file (`render.yaml`) optimized for deployment on [Render](https://render.com/).
 
-### Method 1: Blueprint Deployment (Recommended)
+### Deployment Steps
 1. Push your repository to GitHub or GitLab.
-2. In the Render Dashboard, click **New +** &rarr; **Blueprint**.
-3. Select your repository. Render will automatically parse `render.yaml`.
-4. Fill in the required secret environment variables prompted by the dashboard.
-5. Click **Apply**.
+2. In the Render Dashboard, navigate to **New +** &rarr; **Blueprint** and select your repository.
+3. Configure the environment variables in the Render dashboard:
+   - `MONGO_URL`: Your MongoDB Atlas production connection string.
+   - `JWT_SECRET`: A strong, cryptographically random secret string.
+   - `PASSWORD_SALT`: A unique random salt for password hashing.
+   - `GROQ_API_KEY`: Your production Groq Cloud API key.
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Your Cloudinary credentials.
+   - `ADMIN_EMAIL`, `ADMIN_PASSWORD`: Credentials for your initial administrator account.
+4. Deploy the service. Render will execute `npm install` and start the server using `npm start`.
+5. Open the Render **Shell** tab and run the initial setup commands:
+   ```bash
+   # Create initial admin account
+   npm run create-admin
 
-### Method 2: Manual Web Service Setup
-If creating the service manually:
-- **Environment**: `Node`
-- **Build Command**: `npm install`
-- **Start Command**: `npm start`
-- **Plan**: `Free` or `Starter`
+   # Run experience type migration if upgrading from existing legacy data
+   npm run migrate:experience
+   ```
+6. Log in to the Admin Panel at `https://<your-app>.onrender.com/admin` and verify under **AI Control** (`/admin/ai`) that the active model is set to `openai/gpt-oss-120b`.
 
-### Required Environment Variables on Render
-Configure these in the Render service **Environment** tab:
+> [!WARNING]
+> **Ephemeral Disk Notice**: Render web services run on ephemeral file systems. Any image uploaded to local storage (`public/uploads`) will be lost when the container redeploys or restarts. **Always configure Cloudinary in production**. Blogify's storage service strictly refuses local disk uploads when `NODE_ENV=production` if Cloudinary credentials are missing.
 
-```env
-NODE_VERSION=20
-NODE_ENV=production
-MONGO_URL=mongodb+srv://<username>:<password>@cluster.mongodb.net/blogify?retryWrites=true&w=majority
-JWT_SECRET=your_super_strong_production_jwt_secret_key
-PASSWORD_SALT=your_super_strong_production_password_salt
-GROQ_API_KEY=gsk_your_groq_api_key
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-ADMIN_EMAIL=admin@yourdomain.com
-ADMIN_PASSWORD=YourAdminProductionPassword123!
-ADMIN_NAME=Platform Administrator
-SESSION_SECRET=your_strong_session_secret
-MAX_LOGIN_ATTEMPTS=5
-LOCK_DURATION_MINUTES=15
+> [!CAUTION]
+> If seeding demo data on a live database, the script enforces a safety guard that requires passing the exact database name:
+> `node scripts/seedDemo.js --confirm-db <YOUR_PRODUCTION_DB_NAME>`
+
+---
+
+## 📊 Evaluation: AI Note Structuring
+
+Blogify includes an automated benchmarking tool (`npm run eval:structure`) to quantitatively assess the accuracy of AI structure extraction from raw student notes.
+
+### Running the Evaluation
+```bash
+# Run benchmark against dataset
+npm run eval:structure
 ```
 
-### ⚠️ Ephemeral Disk Warning
-> [!WARNING]
-> Render web services utilize **ephemeral file systems**. Any file saved to the local disk (`public/uploads`) will be **erased** whenever Render redeploys or restarts your service.
-> 
-> To guarantee that uploaded blog covers are never lost, **always configure Cloudinary** (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) in production. Blogify's storage service strictly rejects writing to local disk when `NODE_ENV=production` if Cloudinary is omitted.
+### Metrics Measured
+- **Field Accuracy**: Exact-match percentage for company name, job role, drive year, drive type, round count, and final hiring outcome.
+- **Grounding & Hallucinations**: Verifies that extracted facts correspond to explicit statements in the source notes without fabricated details.
+- **Inference Latency**: Average and percentile execution time per request in milliseconds.
 
-### Seeding Admin in Production
-After your initial Render deployment completes:
-1. Open the **Shell** tab in your Render service dashboard.
-2. Run:
-   ```bash
-   npm run create-admin
-   ```
-3. Your admin account is now active and ready for login.
+The repository includes a synthetic test dataset (`data/structure-eval.json`) with sample inputs marked `"example": true`. When evaluated, the runner prints an explicit notice that synthetic example data is not reportable as benchmark results. To measure real performance, users can create a local, git-ignored dataset at `data/structure-eval.local.json` with anonymized notes.
+
+[//]: # (TODO author: add measured results)
 
 ---
 
 ## 🔧 Troubleshooting Guide
 
-Solutions to real issues encountered during development and deployment:
+| Symptom | Probable Cause | Recommended Fix |
+|---|---|---|
+| **Cannot find module from relative path** | Miscalculated directory depth when requiring files | Use verified relative paths or resolve paths relative to root (e.g. `../middlewares/requireAdmin`). |
+| **`generateCsrfToken is not a function` or invalid token** | Version API mismatch in CSRF middleware | Use `generateToken` destructured from `doubleCsrf` matching `csrf-csrf` v3. |
+| **Admin page unstyled / CSS 404** | Relative asset paths in nested admin templates | Reference assets using root-relative paths: `<link rel="stylesheet" href="/css/admin.css">`. |
+| **`ReferenceError: <variable> is not defined` in EJS** | Controller omitted expected variable in `res.render()` | Pass safe defaults from the controller or guard with `locals.variableName`. |
+| **Inline scripts or `onclick` blocked** | Helmet CSP directive `script-src-attr 'none'` active | Move client behavior to external JavaScript files in `/public/js/` loaded with `defer`. |
+| **Broken cover images after redeployment** | Ephemeral container storage erased local upload | Configure Cloudinary credentials in `.env` to store images persistently in the cloud. |
+| **AI returns 404 `model_not_found` or unavailable** | Target model was decommissioned or retired by provider | Visit `/admin/ai` and update `Settings.aiModel` to an active model (e.g. `openai/gpt-oss-120b`). |
+| **Cannot sign in after multiple attempts** | Account locked by brute-force defense | Wait 15 minutes for lockout expiry or have an admin unlock the account from `/admin/users/:id`. |
+| **`localhost:8000` shows `{"detail":"Not Found"}` or another app's page** | Another program, often a Docker container, already holds the port | Find it with `Get-NetTCPConnection -LocalPort 8000` then `Get-CimInstance Win32_Process`, stop that program or set a different `PORT`. Note that dotenv never overrides a `PORT` variable that is already set in the terminal or in Windows, and nodemon does not restart when `.env` changes. |
+| **`MongooseServerSelectionError` or could not connect to Atlas** | The current IP is not on the Atlas Network Access list, the cluster is paused, or a VPN or firewall blocks port 27017 | Add the current IP in Atlas under Network Access (never remove the entry Render relies on), resume the cluster, or test with `Test-NetConnection <host> -Port 27017`. |
 
-### 1. `Cannot find module '../../middlewares/requireAdmin'`
-- **Cause**: Incorrect relative path depth. Routes in `routes/admin.js` are only one directory deep, so requiring from the middlewares folder needs `../middlewares/` instead of `../../middlewares/`.
-- **Fix**: Ensure requires in route files use `../middlewares/requireAdmin` or `../models/user`.
+---
 
-### 2. `TypeError: generateCsrfToken is not a function` or Invalid CSRF Token
-- **Cause**: Version mismatch between `csrf-csrf` v3 and v4. v3 exports `generateToken` while v4 exports `generateCsrfToken`.
-- **Fix**: Destructure `{ generateToken, doubleCsrfProtection } = doubleCsrf(...)` in `app.js` matching `csrf-csrf` v3.
+## 📸 Screenshots
 
-### 3. Admin Page Unstyled or CSS 404
-- **Cause**: Using relative paths like `href="css/admin.css"` or `href="../../css/admin.css"` breaks when viewing nested routes like `/admin/users/123/edit`.
-- **Fix**: Always reference assets using root-relative absolute paths: `<link rel="stylesheet" href="/css/admin.css">` and `<link rel="stylesheet" href="/css/main.css">`.
-
-### 4. `ReferenceError: <variable> is not defined` in EJS
-- **Cause**: Template references a variable that the controller did not pass to `res.render(...)` (e.g. `passwordReset`, `tempPassword`).
-- **Fix**: Ensure controllers pass safe defaults (e.g. `passwordReset: false, tempPassword: null`), or guard the template using `locals.variableName`.
-
-### 5. Eye Toggle Button Dead or Inline Scripts Blocked
-- **Cause**: Helmet v8 sets the Content Security Policy directive `script-src-attr 'none'` by default, blocking inline `onclick="..."` attributes and inline script tags.
-- **Fix**: Load behavior unobtrusively using external scripts loaded with `defer` (e.g. `<script src="/js/password-toggle.js" defer></script>`).
-
-### 6. Broken Blog Cover Images After Redeployment
-- **Cause**: Images stored locally on ephemeral storage get wiped during container restarts.
-- **Fix**: Configure Cloudinary credentials in `.env`, run `npm run migrate:images` to migrate local assets, and rely on `resolveCoverUrl` to display `/Images/blog-placeholder.svg` if any file is missing.
-
-### 7. Account Locked After Multiple Failed Logins
-- **Cause**: Repeated invalid password attempts triggered brute-force defense (`failedLoginAttempts >= MAX_LOGIN_ATTEMPTS`).
-- **Fix**: Wait for the lockout period to expire (`LOCK_DURATION_MINUTES`), or have an administrator unlock the account instantly from `/admin/users/:id` by clicking **Unlock Account**.
+*(Visual documentation screenshots are currently in preparation. To capture live screenshots, run the application locally or view the deployed service.)*
 
 ---
 
 ## 🔮 Future Improvements
 
-- [x] 🛡️ **Comprehensive Admin Panel** — Complete site governance, analytics, moderation, and settings.
-- [x] 🖼️ **Persistent Cloud Image Storage** — Cloudinary integration with local development fallback.
-- [x] 🤖 **Dynamic AI Tone Governance** — Custom tone prompts, model configuration, and usage limits in DB.
-- [x] 🔒 **Security Hardening** — Helmet CSP, double-submit CSRF, rate-limiting, and brute-force lockout.
-- [x] 🛠️ **CLI Maintenance Tools** — Scripts for image integrity verification, repair, and migration.
-- [ ] 📊 **Author Dashboard** — Dedicated personal dashboard for regular writers to review their own stories.
-- [ ] ✏️ **Author Self-Service Editing** — Allow writers to edit and delete their own published blogs.
-- [ ] 👍 **Likes & Bookmarks** — Community reactions and personal bookmark collections.
-- [ ] 🔍 **Public Search & Tag Filtering** — Public full-text search and category tags.
-- [ ] 🌙 **Dark Mode** — User preference theme toggle between light and dark palettes.
-- [ ] 📎 **WYSIWYG Rich Text Editor** — Upgrade from standard text areas to a rich editor (Markdown or Quill).
-- [ ] 🔑 **Modern Password Hashing** — Upgrade password hashing from HMAC-SHA256 to Argon2id or bcrypt.
+- [x] 🛡️ **Comprehensive Admin Panel** — Platform governance, user management, moderation, and settings.
+- [x] 🎓 **Interview Experiences Platform** — Multi-round logging, company statistics, and filtering.
+- [x] 🤖 **AI-Assisted Note Structuring** — Automatic extraction of structured experience fields from raw notes.
+- [x] 👤 **Author Anonymity Controls** — Public author masking enforced via central anonymity helper.
+- [x] 🏢 **Company Deduplication & Merge** — Atomic company merge with alias migration and cycle detection.
+- [x] 🖼️ **Persistent Cloud Image Storage** — Cloudinary integration with ephemeral disk guards.
+- [x] 🔒 **Security Hardening** — Helmet CSP, double-submit CSRF, rate-limiting, and account lockout.
+- [x] 🧪 **Demo Data Management** — Isolated CLI seed and cleanup tool for local demonstrations.
+- [ ] 🔑 **Modern Password Hashing** — Upgrade authentication from HMAC-SHA-256 to Argon2id or bcrypt.
 - [ ] 🛡️ **Two-Factor Authentication (2FA)** — TOTP-based multi-factor authentication for administrative accounts.
-- [ ] 📧 **Email Verification & Password Reset** — Integration with transactional email (SendGrid/Resend) for self-service password recovery.
+- [ ] 🧪 **Automated CI/CD Test Pipeline** — Continuous integration test workflow running on pull requests.
+- [ ] 📧 **Email Verification & Self-Service Password Reset** — Transactional email integration for account recovery.
+- [ ] ✏️ **Author Self-Service Editing for Plain Blogs** — Allow writers to edit and delete their own plain editorial blogs (currently supported for experiences).
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Author & License
 
 **Rishi** — [@githubrishi321](https://github.com/githubrishi321)
 
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/githubrishi321)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rishikesh-c-rpc/)
-
----
-
-## 📄 License
-
-This project is open source and available under the [ISC License](./package.json).
+This project is open-source software licensed under the **ISC License** as specified in [`LICENSE`](./LICENSE).

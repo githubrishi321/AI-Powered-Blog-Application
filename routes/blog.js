@@ -6,6 +6,7 @@ const Blog = require("../models/blog");
 const Comment = require("../models/comment");
 const { isAuthenticated } = require("../middlewares/authentication");
 const { uploadCover, upload: storeImage, remove: removeImage } = require("../services/imageStorage");
+const { doubleCsrfProtection } = require("../middlewares/csrf");
 
 router.get("/add-new", isAuthenticated, (req, res) => {
   return res.render("addBlog", {
@@ -38,6 +39,7 @@ router.post(
       next();
     });
   },
+  doubleCsrfProtection,
   async (req, res) => {
     let uploaded = null;
     try {
@@ -54,6 +56,7 @@ router.post(
         body,
         title,
         createdBy: req.user._id,
+        type: "blog",
       };
 
       if (req.file) {
@@ -93,6 +96,10 @@ router.get("/:id", async function (req, res) {
       });
     }
 
+    if (blog.type === "experience") {
+      return res.redirect(`/experiences/${blog._id}`);
+    }
+
     const comments = await Comment.find({ blogId: req.params.id }).populate(
       "createdBy"
     );
@@ -111,24 +118,56 @@ router.get("/:id", async function (req, res) {
   }
 });
 
-router.post("/comment/:blogId", isAuthenticated, async function (req, res) {
+router.post("/comment/:blogId", isAuthenticated, doubleCsrfProtection, async function (req, res) {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.blogId)) {
+      return res.status(404).render("error", {
+        user: req.user,
+        message: "Blog not found",
+      });
+    }
+
+    const blog = await Blog.findById(req.params.blogId).select("type status createdBy");
+    if (!blog) {
+      return res.status(404).render("error", {
+        user: req.user,
+        message: "Blog not found",
+      });
+    }
+
+    if (blog.type === "experience" && blog.status === "hidden") {
+      const isOwner = req.user && String(req.user._id) === String(blog.createdBy);
+      const isAdmin = req.user && req.user.role === "ADMIN";
+      if (!isOwner && !isAdmin) {
+        return res.status(404).render("error", {
+          user: req.user,
+          message: "Experience not found",
+        });
+      }
+    }
+
     const { content } = req.body;
+    const redirectUrl = blog.type === "experience"
+      ? `/experiences/${req.params.blogId}`
+      : `/blog/${req.params.blogId}`;
 
     if (!content || content.trim() === "") {
-      return res.status(400).redirect(`/blog/${req.params.blogId}`);
+      return res.status(400).redirect(redirectUrl);
     }
 
     await Comment.create({
       content: content.trim(),
-      blogId: new mongoose.Types.ObjectId(req.params.blogId),
+      blogId: blog._id,
       createdBy: new mongoose.Types.ObjectId(req.user._id),
     });
 
-    res.redirect(`/blog/${req.params.blogId}`);
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error("Error creating comment:", error);
-    res.redirect(`/blog/${req.params.blogId}`);
+    return res.status(500).render("error", {
+      user: req.user,
+      message: "Error creating comment",
+    });
   }
 });
 

@@ -122,7 +122,12 @@
                             </div>
                           <% } %>
                           <div>
-                            <div class="fw-semibold"><%= u.fullName %></div>
+                            <div class="fw-semibold">
+                              <%= u.fullName %>
+                              <% if (u.isDemo) { %>
+                                <span class="badge bg-secondary ms-1">Demo</span>
+                              <% } %>
+                            </div>
                             <small class="text-muted"><%= u.email %></small>
                           </div>
                         </div>

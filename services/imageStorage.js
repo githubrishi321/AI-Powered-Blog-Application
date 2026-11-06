@@ -66,27 +66,36 @@ async function upload(buffer, mimetype, options = {}) {
 
   // 1. Cloudinary upload (Primary)
   if (isCloudinaryConfigured) {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: options.folder || "blogify_covers",
-          resource_type: "image",
-          allowed_formats: ["jpg", "png", "webp", "gif"],
-          transformation: options.transformation || [{ quality: "auto", fetch_format: "auto" }],
-        },
-        (error, result) => {
-          if (error) {
-            console.error("Cloudinary upload failed:", error);
-            return reject(new Error("Failed to upload image to cloud storage: " + error.message));
+    try {
+      return await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: options.folder || "blogify_covers",
+            resource_type: "image",
+            allowed_formats: ["jpg", "png", "webp", "gif"],
+            transformation: options.transformation || [{ quality: "auto", fetch_format: "auto" }],
+          },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload failed:", error);
+              return reject(new Error("Failed to upload image to cloud storage: " + error.message));
+            }
+            resolve({
+              url: result.secure_url,
+              publicId: result.public_id,
+            });
           }
-          resolve({
-            url: result.secure_url,
-            publicId: result.public_id,
-          });
-        }
+        );
+        uploadStream.end(buffer);
+      });
+    } catch (cloudErr) {
+      if (process.env.NODE_ENV === "production") {
+        throw cloudErr;
+      }
+      console.warn(
+        `[WARNING] Cloudinary upload failed in development (${cloudErr.message}). Falling back to local disk storage (public/uploads).`
       );
-      uploadStream.end(buffer);
-    });
+    }
   }
 
   // 2. Production check: never write to ephemeral disk in production without Cloudinary

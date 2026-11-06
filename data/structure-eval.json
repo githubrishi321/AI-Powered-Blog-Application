@@ -1,0 +1,67 @@
+[
+  {
+    "example": true,
+    "notes": "TCS me off campus drive hua 2024 me for System Associate. Pehla round aptitude test tha and technical me Java and SQL poocha. Result abhi aya nahi, waiting for update.",
+    "expected": {
+      "company": "TCS",
+      "role": "System Associate",
+      "driveType": "off-campus",
+      "year": 2024,
+      "roundCount": 2,
+      "roundTypes": ["aptitude", "technical"],
+      "outcome": "waiting"
+    }
+  },
+  {
+    "example": true,
+    "notes": "Interview at InnoTech for Backend Engineer, on campus, 2024. The selection process had an online coding round followed immediately by a technical interview on Node.js and system design in the same session. Final round was an HR discussion about teamwork.",
+    "expected": {
+      "company": "InnoTech",
+      "role": "Backend Engineer",
+      "driveType": "on-campus",
+      "year": 2024,
+      "roundCount": 3,
+      "roundTypes": ["coding", "hr", "technical"],
+      "outcome": null
+    }
+  },
+  {
+    "example": true,
+    "notes": "Attended off-campus drive 2025 at CloudNine for Developer. First round was technical interview focusing on Python, algorithms, and microservices architecture. Second round was managerial interview about past projects.",
+    "expected": {
+      "company": "CloudNine",
+      "role": "Developer",
+      "driveType": "off-campus",
+      "year": 2025,
+      "roundCount": 2,
+      "roundTypes": ["managerial", "technical"],
+      "outcome": null
+    }
+  },
+  {
+    "example": true,
+    "notes": "Applied for Data Analyst role at QuantMetrics, internship 2025. Round 1 was an aptitude test with statistics questions. Round 2 was a technical round on pandas and SQL queries. HR round took place yesterday, my result is awaited.",
+    "expected": {
+      "company": "QuantMetrics",
+      "role": "Data Analyst",
+      "driveType": "internship",
+      "year": 2025,
+      "roundCount": 3,
+      "roundTypes": ["aptitude", "hr", "technical"],
+      "outcome": "waiting"
+    }
+  },
+  {
+    "example": true,
+    "notes": "Interviewed at ApexLogic for QA Engineer in 2024 on campus. Round 1 was an automated testing coding challenge with Selenium. Round 2 was a technical interview covering API testing and Postman.",
+    "expected": {
+      "company": "ApexLogic",
+      "role": "QA Engineer",
+      "driveType": "on-campus",
+      "year": 2024,
+      "roundCount": 2,
+      "roundTypes": ["coding", "technical"],
+      "outcome": null
+    }
+  }
+]

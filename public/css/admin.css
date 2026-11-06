@@ -569,3 +569,20 @@ body.admin-body a {
   }
 }
 
+.pre-wrap-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+.verified-badge {
+  background-color: #0d9488;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+}
+

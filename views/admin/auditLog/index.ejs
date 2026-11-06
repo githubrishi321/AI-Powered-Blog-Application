@@ -84,7 +84,7 @@
                         <%= new Date(log.createdAt).toLocaleString() %>
                       </td>
                       <td>
-                        <span class="fw-semibold small"><%= log.adminEmail || (log.admin ? log.admin.email : 'Unknown') %></span>
+                        <span class="fw-semibold small"><%= log.adminEmail || (log.admin ? log.admin.email : 'Deleted user') %></span>
                       </td>
                       <td>
                         <span class="badge badge-admin font-monospace"><%= log.action %></span>

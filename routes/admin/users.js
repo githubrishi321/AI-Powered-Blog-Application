@@ -7,7 +7,9 @@ const multer = require("multer");
 const User = require("../../models/user");
 const Blog = require("../../models/blog");
 const Comment = require("../../models/comment");
+const Report = require("../../models/report");
 const { logAudit } = require("../../services/auditLogger");
+const { deleteBlogsCascade } = require("../../services/blogCleanup");
 const { removeImage } = require("../../services/imageStorage");
 const { body, validationResult } = require("express-validator");
 
@@ -391,18 +393,13 @@ router.post("/:id/delete", async (req, res) => {
         await Comment.updateMany({ createdBy: target._id }, { $set: { createdBy: reassignTo } });
       }
     } else {
-      // Default: Delete all blogs (and cover images) and comments
-      const blogs = await Blog.find({ createdBy: target._id });
-      for (const blog of blogs) {
-        if (blog.coverImagePublicId) {
-          await removeImage(blog.coverImagePublicId);
-        } else if (blog.coverImageURL) {
-          await removeImage(blog.coverImageURL);
-        }
-        await Blog.findByIdAndDelete(blog._id);
-        await Comment.deleteMany({ blogId: blog._id });
+      // Default: Delete all blogs (and cover images, comments, reports) via shared cascade
+      const userBlogs = await Blog.find({ createdBy: target._id }).select("_id");
+      if (userBlogs.length > 0) {
+        await deleteBlogsCascade(userBlogs.map((b) => b._id));
       }
       await Comment.deleteMany({ createdBy: target._id });
+      await Report.deleteMany({ reporter: target._id });
     }
 
     // Clean up local avatar if any

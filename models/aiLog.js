@@ -8,7 +8,12 @@ const aiLogSchema = new mongoose.Schema({
   },
   tone: {
     type: String,
-    required: true,
+    required: false,
+  },
+  action: {
+    type: String,
+    enum: ["tone", "structure", "search", "ask", "moderation"],
+    default: "tone",
   },
   inputLength: {
     type: Number,
@@ -17,6 +22,10 @@ const aiLogSchema = new mongoose.Schema({
     type: String,
     enum: ["success", "error", "blocked"],
     default: "success",
+  },
+  errorCode: {
+    type: String,
+    default: null,
   },
   latencyMs: {
     type: Number,

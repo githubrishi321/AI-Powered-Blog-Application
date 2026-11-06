@@ -407,7 +407,13 @@
                       <%= blog.createdBy.fullName %>
                     </span>
                   </div>
-                  <% } %>
+                <% } else { %>
+                  <div class="metadata-item">
+                    <img src="/Images/default.svg" class="rounded-circle" width="28" height="28"
+                      style="object-fit: cover;" />
+                    <span>Deleted user</span>
+                  </div>
+                <% } %>
                     <div class="metadata-item">
                       <i class="fas fa-calendar-alt"></i>
                       <span>
@@ -418,7 +424,7 @@
                     <div class="metadata-item">
                       <i class="fas fa-clock"></i>
                       <span>
-                        <%= Math.ceil(blog.body.length / 1000) %> min read
+                        <%= Math.ceil((blog.body || '').length / 1000) %> min read
                       </span>
                     </div>
               </div>
@@ -435,7 +441,7 @@
                 <!-- Blog Content -->
                 <div class="blog-body">
                   <% // Split content into paragraphs for better formatting const
-                    paragraphs=blog.body.split('\n').filter(p=> p.trim());
+                    paragraphs=(blog.body || '').split('\n').filter(p=> p.trim());
                     %>
                     <% paragraphs.forEach(paragraph=> { %>
                       <p>
@@ -557,7 +563,7 @@
                                       <div class="flex-grow-1">
                                         <div
                                           class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-                                          <h6 class="mb-0 fw-bold text-muted">Unknown User</h6>
+                                          <h6 class="mb-0 fw-bold text-muted">Deleted user</h6>
                                           <small class="text-muted">
                                             <i class="fas fa-clock me-1"></i>
                                             User information not available
@@ -594,7 +600,7 @@
                   <% } else { %>
                     <img src="/Images/default.svg" class="author-card-avatar" />
                     <div>
-                      <h4 class="author-card-name">Unknown Author</h4>
+                      <h4 class="author-card-name">Deleted user</h4>
                       <p class="author-card-label mb-0">Author information not available</p>
                     </div>
                     <% } %>
@@ -641,7 +647,7 @@
                   <div>
                     <small class="text-muted d-block">Reading Time</small>
                     <span>
-                      <%= Math.ceil(blog.body.length / 1000) %> min read
+                      <%= Math.ceil((blog.body || '').length / 1000) %> min read
                     </span>
                   </div>
                 </li>

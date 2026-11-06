@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <title>Edit Interview Experience - Blogify</title>
+</head>
+<body>
+  <%- include("../partials/nav") %>
+
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4 p-md-5">
+
+            <!-- Header -->
+            <div class="mb-4 pb-3 border-bottom d-flex justify-content-between align-items-center">
+              <div>
+                <h1 class="h3 fw-bold text-dark mb-1">
+                  <i class="fas fa-edit me-2 text-primary"></i>Edit Interview Experience
+                </h1>
+                <p class="text-muted small mb-0">Update your interview rounds, questions, and insights</p>
+              </div>
+              <a href="/experiences/<%= experienceId %>" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Back
+              </a>
+            </div>
+
+            <% if (wasVerified) { %>
+              <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+                <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+                <div>
+                  <strong>Notice:</strong> This experience is currently verified. Saving edits will reset the Verified badge pending administrative review.
+                </div>
+              </div>
+            <% } %>
+
+            <% if (errors.general) { %>
+              <div class="alert alert-danger mb-4" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i><%= errors.general %>
+              </div>
+            <% } %>
+
+            <form id="experienceForm" action="/experiences/<%= experienceId %>/edit" method="POST" novalidate>
+              <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+
+              <!-- Company & Role -->
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="companyInput" class="form-label fw-semibold">Company Name *</label>
+                  <input
+                    type="text"
+                    name="company"
+                    id="companyInput"
+                    class="form-control <%= errors.company ? 'is-invalid' : '' %>"
+                    placeholder="e.g. Google, Microsoft, TCS"
+                    list="companyList"
+                    value="<%= formData.company || '' %>"
+                    required
+                  >
+                  <datalist id="companyList">
+                    <% (companies || []).forEach(function(c) { %>
+                      <option value="<%= c.name %>"></option>
+                    <% }); %>
+                  </datalist>
+                  <div id="companyNewHint" class="form-text text-muted mt-1"></div>
+                  <% if (errors.company) { %>
+                    <div class="invalid-feedback"><%= errors.company %></div>
+                  <% } %>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="roleInput" class="form-label fw-semibold">Job Role / Title *</label>
+                  <input
+                    type="text"
+                    name="role"
+                    id="roleInput"
+                    class="form-control <%= errors.role ? 'is-invalid' : '' %>"
+                    placeholder="e.g. Software Engineer, SDE Intern"
+                    value="<%= formData.role || '' %>"
+                    required
+                  >
+                  <% if (errors.role) { %>
+                    <div class="invalid-feedback"><%= errors.role %></div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Drive Type, Year, Difficulty, Outcome -->
+              <div class="row g-3 mb-4">
+                <div class="col-md-3 col-sm-6">
+                  <label for="driveTypeSelect" class="form-label fw-semibold">Drive Type *</label>
+                  <select name="driveType" id="driveTypeSelect" class="form-select <%= errors.driveType ? 'is-invalid' : '' %>" required>
+                    <option value="">Select...</option>
+                    <option value="on-campus" <%= formData.driveType === 'on-campus' ? 'selected' : '' %>>On-Campus</option>
+                    <option value="off-campus" <%= formData.driveType === 'off-campus' ? 'selected' : '' %>>Off-Campus</option>
+                    <option value="internship" <%= formData.driveType === 'internship' ? 'selected' : '' %>>Internship</option>
+                  </select>
+                  <% if (errors.driveType) { %>
+                    <div class="invalid-feedback"><%= errors.driveType %></div>
+                  <% } %>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                  <label for="yearInput" class="form-label fw-semibold">Year *</label>
+                  <% const currentYr = new Date().getFullYear(); %>
+                  <input
+                    type="number"
+                    name="year"
+                    id="yearInput"
+                    min="2015"
+                    max="<%= currentYr + 1 %>"
+                    class="form-control <%= errors.year ? 'is-invalid' : '' %>"
+                    value="<%= formData.year || currentYr %>"
+                    required
+                  >
+                  <% if (errors.year) { %>
+                    <div class="invalid-feedback"><%= errors.year %></div>
+                  <% } %>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                  <label for="diffSelect" class="form-label fw-semibold">Difficulty (1-5) *</label>
+                  <select name="difficulty" id="diffSelect" class="form-select <%= errors.difficulty ? 'is-invalid' : '' %>" required>
+                    <option value="">Select...</option>
+                    <option value="1" <%= formData.difficulty == 1 ? 'selected' : '' %>>1 - Very Easy</option>
+                    <option value="2" <%= formData.difficulty == 2 ? 'selected' : '' %>>2 - Easy</option>
+                    <option value="3" <%= formData.difficulty == 3 ? 'selected' : '' %>>3 - Medium</option>
+                    <option value="4" <%= formData.difficulty == 4 ? 'selected' : '' %>>4 - Hard</option>
+                    <option value="5" <%= formData.difficulty == 5 ? 'selected' : '' %>>5 - Very Hard</option>
+                  </select>
+                  <% if (errors.difficulty) { %>
+                    <div class="invalid-feedback"><%= errors.difficulty %></div>
+                  <% } %>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                  <label for="outcomeSelect" class="form-label fw-semibold">Outcome *</label>
+                  <select name="outcome" id="outcomeSelect" class="form-select <%= errors.outcome ? 'is-invalid' : '' %>" required>
+                    <option value="">Select...</option>
+                    <option value="selected" <%= formData.outcome === 'selected' ? 'selected' : '' %>>Selected</option>
+                    <option value="rejected" <%= formData.outcome === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                    <option value="waiting" <%= formData.outcome === 'waiting' ? 'selected' : '' %>>Waiting</option>
+                    <option value="undisclosed" <%= !formData.outcome || formData.outcome === 'undisclosed' ? 'selected' : '' %>>Undisclosed</option>
+                  </select>
+                  <% if (errors.outcome) { %>
+                    <div class="invalid-feedback"><%= errors.outcome %></div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Interview Rounds Section -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h2 class="h5 fw-bold text-dark mb-0">Interview Rounds *</h2>
+                    <small class="text-muted">Break down your interview process round-by-round (max 10 rounds)</small>
+                  </div>
+                  <button type="button" id="addRoundBtn" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>Add Another Round
+                  </button>
+                </div>
+
+                <% if (errors.rounds) { %>
+                  <div class="alert alert-danger py-2 small mb-3"><%= errors.rounds %></div>
+                <% } %>
+
+                <div id="roundsContainer">
+                  <% 
+                    let preservedRounds = [];
+                    if (Array.isArray(formData.rounds)) {
+                      preservedRounds = formData.rounds.filter(r => r && typeof r === 'object');
+                    } else if (typeof formData.rounds === 'object' && formData.rounds !== null) {
+                      preservedRounds = Object.values(formData.rounds).filter(r => r && typeof r === 'object');
+                    }
+                  %>
+                  <% if (preservedRounds.length > 0) { %>
+                    <% preservedRounds.forEach(function(r, rIdx) { %>
+                      <div class="round-card">
+                        <div class="round-card-header">
+                          <span class="round-number-badge">Round <%= rIdx + 1 %></span>
+                          <button type="button" class="btn btn-sm btn-outline-danger btn-remove-round" title="Remove Round">
+                            <i class="fas fa-trash me-1"></i>Remove
+                          </button>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-5">
+                            <label class="form-label small fw-semibold">Round Name *</label>
+                            <input
+                              type="text"
+                              name="rounds[<%= rIdx %>][name]"
+                              data-field="name"
+                              class="form-control form-control-sm <%= errors['round_' + rIdx + '_name'] ? 'is-invalid' : '' %>"
+                              placeholder="e.g. Online Assessment, Tech 1"
+                              value="<%= r.name || '' %>"
+                              required
+                            >
+                            <% if (errors['round_' + rIdx + '_name']) { %>
+                              <div class="invalid-feedback"><%= errors['round_' + rIdx + '_name'] %></div>
+                            <% } %>
+                          </div>
+
+                          <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Round Type *</label>
+                            <select name="rounds[<%= rIdx %>][type]" data-field="type" class="form-select form-select-sm <%= errors['round_' + rIdx + '_type'] ? 'is-invalid' : '' %>" required>
+                              <option value="aptitude" <%= r.type === 'aptitude' ? 'selected' : '' %>>Aptitude</option>
+                              <option value="coding" <%= r.type === 'coding' ? 'selected' : '' %>>Coding</option>
+                              <option value="technical" <%= !r.type || r.type === 'technical' ? 'selected' : '' %>>Technical</option>
+                              <option value="managerial" <%= r.type === 'managerial' ? 'selected' : '' %>>Managerial</option>
+                              <option value="hr" <%= r.type === 'hr' ? 'selected' : '' %>>HR</option>
+                              <option value="group-discussion" <%= r.type === 'group-discussion' ? 'selected' : '' %>>Group Discussion</option>
+                              <option value="other" <%= r.type === 'other' ? 'selected' : '' %>>Other</option>
+                            </select>
+                            <% if (errors['round_' + rIdx + '_type']) { %>
+                              <div class="invalid-feedback"><%= errors['round_' + rIdx + '_type'] %></div>
+                            <% } %>
+                          </div>
+
+                          <div class="col-md-2 col-6">
+                            <label class="form-label small fw-semibold">Duration (min)</label>
+                            <input
+                              type="number"
+                              name="rounds[<%= rIdx %>][durationMinutes]"
+                              data-field="durationMinutes"
+                              min="0"
+                              class="form-control form-control-sm"
+                              placeholder="60"
+                              value="<%= r.durationMinutes || '' %>"
+                            >
+                          </div>
+
+                          <div class="col-md-2 col-6">
+                            <label class="form-label small fw-semibold">Difficulty (1-5)</label>
+                            <select name="rounds[<%= rIdx %>][difficulty]" data-field="difficulty" class="form-select form-select-sm">
+                              <option value="">Optional</option>
+                              <option value="1" <%= r.difficulty == 1 ? 'selected' : '' %>>1</option>
+                              <option value="2" <%= r.difficulty == 2 ? 'selected' : '' %>>2</option>
+                              <option value="3" <%= r.difficulty == 3 ? 'selected' : '' %>>3</option>
+                              <option value="4" <%= r.difficulty == 4 ? 'selected' : '' %>>4</option>
+                              <option value="5" <%= r.difficulty == 5 ? 'selected' : '' %>>5</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="mb-3">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label small fw-semibold mb-0">Round Description & Experience</label>
+                            <small class="text-muted char-counter-desc">0 / 1000</small>
+                          </div>
+                          <textarea
+                            name="rounds[<%= rIdx %>][description]"
+                            data-field="description"
+                            rows="3"
+                            maxlength="1000"
+                            class="form-control form-control-sm <%= errors['round_' + rIdx + '_description'] ? 'is-invalid' : '' %>"
+                            placeholder="What happened in this round? Topics asked, interviewer tone, etc..."
+                          ><%= r.description || '' %></textarea>
+                          <% if (errors['round_' + rIdx + '_description']) { %>
+                            <div class="invalid-feedback"><%= errors['round_' + rIdx + '_description'] %></div>
+                          <% } %>
+                        </div>
+
+                        <!-- Questions in this round -->
+                        <div class="questions-container">
+                          <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label small fw-semibold text-secondary mb-0">
+                              <i class="fas fa-question-circle me-1"></i>Questions Asked (Max 15)
+                            </label>
+                            <button type="button" class="btn btn-xs btn-outline-secondary btn-add-question">
+                              <i class="fas fa-plus me-1"></i>Add Question
+                            </button>
+                          </div>
+                          <div class="questions-list">
+                            <% 
+                              let presQ = [];
+                              if (Array.isArray(r.questions)) {
+                                presQ = r.questions;
+                              } else if (typeof r.questions === 'object' && r.questions !== null) {
+                                presQ = Object.values(r.questions);
+                              }
+                            %>
+                            <% if (presQ.length > 0) { %>
+                              <% presQ.forEach(function(qVal, qIdx) { %>
+                                <div class="input-group input-group-sm mb-2 question-item">
+                                  <input
+                                    type="text"
+                                    name="rounds[<%= rIdx %>][questions][<%= qIdx %>]"
+                                    class="form-control question-input"
+                                    maxlength="300"
+                                    placeholder="e.g. Reverse a linked list, Explain ACID properties..."
+                                    value="<%= typeof qVal === 'string' ? qVal : (qVal?.text || '') %>"
+                                  >
+                                  <button type="button" class="btn btn-outline-danger btn-remove-question" title="Remove question">
+                                    <i class="fas fa-times"></i>
+                                  </button>
+                                </div>
+                              <% }); %>
+                            <% } %>
+                          </div>
+                        </div>
+                      </div>
+                    <% }); %>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Tips & Strategy -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label for="tipsInput" class="form-label fw-semibold mb-0">Preparation Tips & Strategy</label>
+                  <small class="text-muted" id="tipsCounter">0 / 2000</small>
+                </div>
+                <textarea
+                  name="tips"
+                  id="tipsInput"
+                  rows="4"
+                  maxlength="2000"
+                  class="form-control <%= errors.tips ? 'is-invalid' : '' %>"
+                  placeholder="What resources helped you? What should juniors prepare or avoid?"
+                ><%= formData.tips || '' %></textarea>
+                <% if (errors.tips) { %>
+                  <div class="invalid-feedback"><%= errors.tips %></div>
+                <% } %>
+              </div>
+
+              <!-- Overall Placement Story -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label for="storyInput" class="form-label fw-semibold mb-0">Overall Placement Story (Optional)</label>
+                  <small class="text-muted" id="storyCounter">0 / 5000</small>
+                </div>
+                <textarea
+                  name="story"
+                  id="storyInput"
+                  rows="5"
+                  maxlength="5000"
+                  class="form-control <%= errors.story ? 'is-invalid' : '' %>"
+                  placeholder="Share your overall placement journey, mindset, feelings, or background context..."
+                ><%= formData.story || '' %></textarea>
+                <% if (errors.story) { %>
+                  <div class="invalid-feedback"><%= errors.story %></div>
+                <% } %>
+              </div>
+
+              <!-- Anonymity Checkbox -->
+              <div class="card bg-light border-0 p-3 mb-4">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    name="anonymous"
+                    id="anonymousCheck"
+                    class="form-check-input"
+                    <%= formData.anonymous === 'on' || formData.anonymous === true || formData.anonymous === 'true' ? 'checked' : '' %>
+                  >
+                  <label for="anonymousCheck" class="form-check-label fw-semibold">
+                    <i class="fas fa-user-secret me-1 text-secondary"></i>Post Anonymously
+                  </label>
+                  <div class="small text-muted">
+                    If checked, your name and profile photo will be hidden from everyone except platform administrators.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mandatory Guidelines Checkbox -->
+              <div class="card bg-light border-0 p-3 mb-4">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    name="noContactDetails"
+                    id="noContactCheck"
+                    class="form-check-input <%= errors.noContactDetails ? 'is-invalid' : '' %>"
+                    <%= formData.noContactDetails === 'on' || formData.noContactDetails === true || formData.noContactDetails === 'true' ? 'checked' : '' %>
+                    required
+                  >
+                  <label for="noContactCheck" class="form-check-label fw-semibold text-danger">
+                    I confirm that I have NOT included interviewer names, emails, phone numbers, or private contact details *
+                  </label>
+                  <% if (errors.noContactDetails) { %>
+                    <div class="invalid-feedback d-block"><%= errors.noContactDetails %></div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Submit Buttons -->
+              <div class="d-flex justify-content-end gap-2">
+                <a href="/experiences/<%= experienceId %>" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" id="submitExpBtn" class="btn btn-primary px-4">
+                  <i class="fas fa-save me-1"></i>Save Changes
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Round Template for Dynamic Addition -->
+  <template id="roundTemplate">
+    <div class="round-card">
+      <div class="round-card-header">
+        <span class="round-number-badge">Round 1</span>
+        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-round" title="Remove Round">
+          <i class="fas fa-trash me-1"></i>Remove
+        </button>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-5">
+          <label class="form-label small fw-semibold">Round Name *</label>
+          <input
+            type="text"
+            data-field="name"
+            class="form-control form-control-sm"
+            placeholder="e.g. Online Assessment, Tech 1"
+            required
+          >
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Round Type *</label>
+          <select data-field="type" class="form-select form-select-sm" required>
+            <option value="aptitude">Aptitude</option>
+            <option value="coding">Coding</option>
+            <option value="technical" selected>Technical</option>
+            <option value="managerial">Managerial</option>
+            <option value="hr">HR</option>
+            <option value="group-discussion">Group Discussion</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-semibold">Duration (min)</label>
+          <input
+            type="number"
+            data-field="durationMinutes"
+            min="0"
+            class="form-control form-control-sm"
+            placeholder="60"
+          >
+        </div>
+
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-semibold">Difficulty (1-5)</label>
+          <select data-field="difficulty" class="form-select form-select-sm">
+            <option value="">Optional</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label small fw-semibold mb-0">Round Description & Experience</label>
+          <small class="text-muted char-counter-desc">0 / 1000</small>
+        </div>
+        <textarea
+          data-field="description"
+          rows="3"
+          maxlength="1000"
+          class="form-control form-control-sm"
+          placeholder="What happened in this round? Topics asked, interviewer tone, etc..."
+        ></textarea>
+      </div>
+
+      <!-- Questions List -->
+      <div class="questions-container">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label small fw-semibold text-secondary mb-0">
+            <i class="fas fa-question-circle me-1"></i>Questions Asked (Max 15)
+          </label>
+          <button type="button" class="btn btn-xs btn-outline-secondary btn-add-question">
+            <i class="fas fa-plus me-1"></i>Add Question
+          </button>
+        </div>
+        <div class="questions-list"></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Hidden Question Template -->
+  <template id="questionTemplate">
+    <div class="input-group input-group-sm mb-2 question-item">
+      <input
+        type="text"
+        class="form-control question-input"
+        maxlength="300"
+        placeholder="e.g. Reverse a linked list, Explain ACID properties..."
+      >
+      <button type="button" class="btn btn-outline-danger btn-remove-question" title="Remove question">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </template>
+
+  <%- include("../partials/scripts") %>
+  <script src="/js/experience-form.js" defer></script>
+</body>
+</html>
+

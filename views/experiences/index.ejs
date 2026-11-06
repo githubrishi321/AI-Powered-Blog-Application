@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <title>Campus Interview Experiences - Blogify</title>
+</head>
+<body>
+  <%- include("../partials/nav") %>
+
+  <!-- Hero Banner -->
+  <div class="bg-light py-5 border-bottom mb-4">
+    <div class="container text-center">
+      <h1 class="display-5 fw-bold text-dark mb-2">Campus Placement Experiences</h1>
+      <p class="lead text-muted mx-auto mb-4 hero-lead-text">
+        Explore real interview rounds, coding problems, and preparation strategies shared by candidates across top companies.
+      </p>
+      <% if (locals.user) { %>
+        <a href="/experiences/new" class="btn btn-primary btn-lg shadow-sm">
+          <i class="fas fa-plus-circle me-2"></i>Share Your Experience
+        </a>
+      <% } else { %>
+        <a href="/user/signin" class="btn btn-primary btn-lg shadow-sm">
+          <i class="fas fa-sign-in-alt me-2"></i>Sign In to Share Experience
+        </a>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+    <!-- Filter Card -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body p-4">
+        <form action="/experiences" method="GET">
+          <div class="row g-3">
+            <!-- Company Filter -->
+            <div class="col-md-3 col-sm-6">
+              <label for="filterCompany" class="form-label small fw-semibold">Company</label>
+              <select name="company" id="filterCompany" class="form-select form-select-sm">
+                <option value="">All Companies</option>
+                <% (companies || []).filter(c => !c.isAlias).forEach(function(c) { %>
+                  <option value="<%= c._id %>" <%= filters.company === String(c._id) ? 'selected' : '' %>>
+                    <%= c.name %>
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+
+            <!-- Role Search -->
+            <div class="col-md-3 col-sm-6">
+              <label for="filterRole" class="form-label small fw-semibold">Role</label>
+              <input
+                type="text"
+                name="role"
+                id="filterRole"
+                class="form-control form-control-sm"
+                placeholder="e.g. SDE, Analyst"
+                maxlength="50"
+                value="<%= filters.role || '' %>"
+              >
+            </div>
+
+            <!-- Year Filter -->
+            <div class="col-md-2 col-sm-4">
+              <label for="filterYear" class="form-label small fw-semibold">Year</label>
+              <select name="year" id="filterYear" class="form-select form-select-sm">
+                <option value="">All Years</option>
+                <% const currentYear = new Date().getFullYear(); %>
+                <% for (let y = currentYear + 1; y >= 2018; y--) { %>
+                  <option value="<%= y %>" <%= filters.year === String(y) ? 'selected' : '' %>><%= y %></option>
+                <% } %>
+              </select>
+            </div>
+
+            <!-- Drive Type Filter -->
+            <div class="col-md-2 col-sm-4">
+              <label for="filterDriveType" class="form-label small fw-semibold">Drive Type</label>
+              <select name="driveType" id="filterDriveType" class="form-select form-select-sm">
+                <option value="">All Types</option>
+                <option value="on-campus" <%= filters.driveType === 'on-campus' ? 'selected' : '' %>>On-Campus</option>
+                <option value="off-campus" <%= filters.driveType === 'off-campus' ? 'selected' : '' %>>Off-Campus</option>
+                <option value="internship" <%= filters.driveType === 'internship' ? 'selected' : '' %>>Internship</option>
+              </select>
+            </div>
+
+            <!-- Difficulty Filter -->
+            <div class="col-md-2 col-sm-4">
+              <label for="filterDiff" class="form-label small fw-semibold">Difficulty</label>
+              <select name="difficulty" id="filterDiff" class="form-select form-select-sm">
+                <option value="">All Levels</option>
+                <option value="1" <%= filters.difficulty === '1' ? 'selected' : '' %>>1 - Very Easy</option>
+                <option value="2" <%= filters.difficulty === '2' ? 'selected' : '' %>>2 - Easy</option>
+                <option value="3" <%= filters.difficulty === '3' ? 'selected' : '' %>>3 - Medium</option>
+                <option value="4" <%= filters.difficulty === '4' ? 'selected' : '' %>>4 - Hard</option>
+                <option value="5" <%= filters.difficulty === '5' ? 'selected' : '' %>>5 - Very Hard</option>
+              </select>
+            </div>
+
+            <!-- Outcome Filter -->
+            <div class="col-md-3 col-sm-6">
+              <label for="filterOutcome" class="form-label small fw-semibold">Outcome</label>
+              <select name="outcome" id="filterOutcome" class="form-select form-select-sm">
+                <option value="">All Outcomes</option>
+                <option value="selected" <%= filters.outcome === 'selected' ? 'selected' : '' %>>Selected</option>
+                <option value="rejected" <%= filters.outcome === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                <option value="waiting" <%= filters.outcome === 'waiting' ? 'selected' : '' %>>Waiting</option>
+                <option value="undisclosed" <%= filters.outcome === 'undisclosed' ? 'selected' : '' %>>Undisclosed</option>
+              </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="col-md-9 col-sm-6 d-flex align-items-end justify-content-end gap-2">
+              <a href="/experiences" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-undo me-1"></i>Reset
+              </a>
+              <button type="submit" class="btn btn-primary btn-sm px-4">
+                <i class="fas fa-filter me-1"></i>Apply Filters
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Results Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="h5 fw-bold text-dark mb-0">
+        <i class="fas fa-th-large me-2 text-primary"></i>Experiences (<%= totalCount %>)
+      </h2>
+      <% if (totalCount > 0) { %>
+        <small class="text-muted">
+          Page <%= currentPage %> of <%= totalPages %>
+        </small>
+      <% } %>
+    </div>
+
+    <!-- Cards Grid -->
+    <% if (experiences.length === 0) { %>
+      <div class="card shadow-sm border-0 text-center py-5">
+        <div class="card-body">
+          <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+          <h3 class="h5 fw-bold text-dark mb-2">No Interview Experiences Found</h3>
+          <p class="text-muted mb-4 empty-lead-text">
+            We couldn't find any experiences matching your current filters. Try resetting the filters or be the first to share your journey!
+          </p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="/experiences" class="btn btn-outline-secondary">
+              <i class="fas fa-undo me-1"></i>Reset Filters
+            </a>
+            <% if (locals.user) { %>
+              <a href="/experiences/new" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Share Your Experience
+              </a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+        <% experiences.forEach(function(card) { %>
+          <div class="col">
+            <div class="card h-100 shadow-sm border-0 experience-card">
+              <div class="card-body d-flex flex-column p-4">
+                <!-- Badges Row -->
+                <div class="d-flex flex-wrap gap-1 align-items-center mb-3">
+                  <span class="badge bg-light text-dark border">
+                    <%= card.driveType %>
+                  </span>
+                  <span class="badge badge-outcome-<%= card.outcome %>">
+                    <%= card.outcome.charAt(0).toUpperCase() + card.outcome.slice(1) %>
+                  </span>
+                  <span class="badge bg-secondary">
+                    Diff: <%= card.difficulty %>/5
+                  </span>
+                  <% if (card.verified) { %>
+                    <span class="badge verified-badge" title="Verified: a Blogify moderator checked this experience. It is not a guarantee that every detail is correct.">
+                      <i class="fas fa-check-circle me-1"></i>Verified
+                    </span>
+                  <% } %>
+                  <% if (card.isDemo) { %>
+                    <span class="badge bg-secondary text-light">Demo</span>
+                  <% } %>
+                </div>
+
+                <!-- Title, Company & Role -->
+                <h3 class="h5 fw-bold text-dark mb-1">
+                  <a href="/experiences/<%= card.id %>" class="text-decoration-none text-dark hover-primary">
+                    <%= card.title || card.company %>
+                  </a>
+                </h3>
+                <div class="text-muted small mb-3">
+                  <% if (card.companySlug) { %>
+                    <a href="/company/<%= card.companySlug %>" class="text-decoration-none text-muted">
+                      <%= card.company %>
+                    </a>
+                  <% } else { %>
+                    <%= card.company %>
+                  <% } %>
+                  &bull; <%= card.role %> &bull; <%= card.year %>
+                </div>
+
+                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                  <!-- Author Block -->
+                  <div class="d-flex align-items-center">
+                    <img
+                      src="<%= card.author.avatar %>"
+                      alt="Candidate"
+                      class="rounded-circle me-2 avatar-img"
+                      width="28"
+                      height="28"
+                    >
+                    <span class="small text-muted fw-semibold"><%= card.author.name %></span>
+                  </div>
+                  <!-- Link -->
+                  <a href="/experiences/<%= card.id %>" class="btn btn-sm btn-outline-primary">
+                    View <i class="fas fa-arrow-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <% 
+          function buildPageUrl(p) {
+            const params = new URLSearchParams();
+            if (filters.company) params.set('company', filters.company);
+            if (filters.role) params.set('role', filters.role);
+            if (filters.year) params.set('year', filters.year);
+            if (filters.driveType) params.set('driveType', filters.driveType);
+            if (filters.difficulty) params.set('difficulty', filters.difficulty);
+            if (filters.outcome) params.set('outcome', filters.outcome);
+            params.set('page', p);
+            return '/experiences?' + params.toString();
+          }
+        %>
+        <nav aria-label="Experiences pagination" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
+              <a class="page-link" href="<%= buildPageUrl(currentPage - 1) %>" aria-label="Previous">
+                <span aria-hidden="true">&laquo; Previous</span>
+              </a>
+            </li>
+
+            <% for (let p = 1; p <= totalPages; p++) { %>
+              <li class="page-item <%= p === currentPage ? 'active' : '' %>">
+                <a class="page-link" href="<%= buildPageUrl(p) %>"><%= p %></a>
+              </li>
+            <% } %>
+
+            <li class="page-item <%= currentPage >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link" href="<%= buildPageUrl(currentPage + 1) %>" aria-label="Next">
+                <span aria-hidden="true">Next &raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+
+  <%- include("../partials/scripts") %>
+</body>
+</html>
+

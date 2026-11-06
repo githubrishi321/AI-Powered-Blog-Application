@@ -14,6 +14,15 @@
     <div class="admin-content">
       <%- include('./partials/flash') %>
 
+      <% if (locals.demoExperiencesCount && demoExperiencesCount > 0) { %>
+        <div class="alert alert-warning mb-4 d-flex align-items-center" role="alert">
+          <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+          <div>
+            Demo data is present (<%= demoExperiencesCount %> experiences). Remove it with <code>npm run seed:demo -- --remove</code> before real use.
+          </div>
+        </div>
+      <% } %>
+
       <!-- Stat Cards -->
       <div class="row g-3 mb-4">
         <div class="col-xl-3 col-md-6">
@@ -57,7 +66,7 @@
             <div class="stat-icon purple"><i class="fas fa-robot"></i></div>
             <div>
               <div class="stat-value"><%= stats.aiToday %></div>
-              <div class="stat-label">AI Conversions Today</div>
+              <div class="stat-label">AI Requests Today</div>
             </div>
           </div>
         </div>
@@ -87,6 +96,28 @@
               <div class="stat-label">Banned Users</div>
             </div>
           </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <a href="/admin/reports" class="text-decoration-none">
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="fas fa-flag"></i></div>
+              <div>
+                <div class="stat-value text-danger"><%= stats.openReports %></div>
+                <div class="stat-label">Open Reports</div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <a href="/admin/blogs?type=experience&verified=unverified" class="text-decoration-none">
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-shield-alt"></i></div>
+              <div>
+                <div class="stat-value text-warning"><%= stats.unverifiedExperiences %></div>
+                <div class="stat-label">Unverified Experiences</div>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
 
@@ -165,7 +196,7 @@
                   <tr>
                     <td>
                       <div style="font-weight:600; font-size:0.875rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;"><%= b.title %></div>
-                      <div style="font-size:0.78rem; color:#6b7280;"><%= b.createdBy ? b.createdBy.fullName : 'Unknown' %></div>
+                      <div style="font-size:0.78rem; color:#6b7280;"><%= b.createdBy ? b.createdBy.fullName : 'Deleted user' %></div>
                     </td>
                     <td>
                       <span class="badge badge-<%= b.status %>"><%= b.status %></span>

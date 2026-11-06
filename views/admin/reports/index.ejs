@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <%- include('../partials/styles') %>
+  <title>Report Queue | Blogify Admin</title>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <%- include('../partials/sidebar', { currentPage: 'reports' }) %>
+  <div class="admin-main">
+    <%- include('../partials/topbar', { pageTitle: 'Report Queue' }) %>
+    <div class="admin-content">
+      <%- include('../partials/flash') %>
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0">Interview Experience Reports</h4>
+          <small class="text-muted"><%= total %> reported post<%= total !== 1 ? 's' : '' %> found</small>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="admin-card mb-4">
+        <div class="admin-card-body">
+          <form method="GET" action="/admin/reports" class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold">Status</label>
+              <select name="status" class="form-select">
+                <option value="open"      <%= query.status === 'open' || !query.status ? 'selected' : '' %>>Open Reports</option>
+                <option value="resolved"  <%= query.status === 'resolved'              ? 'selected' : '' %>>Resolved</option>
+                <option value="dismissed" <%= query.status === 'dismissed'             ? 'selected' : '' %>>Dismissed</option>
+                <option value="all"       <%= query.status === 'all'                   ? 'selected' : '' %>>All Reports</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold">Reason</label>
+              <select name="reason" class="form-select">
+                <option value=""              <%= !query.reason                  ? 'selected' : '' %>>All Reasons</option>
+                <option value="spam"          <%= query.reason === 'spam'          ? 'selected' : '' %>>Spam</option>
+                <option value="promotional"   <%= query.reason === 'promotional'   ? 'selected' : '' %>>Promotional</option>
+                <option value="personal-info" <%= query.reason === 'personal-info' ? 'selected' : '' %>>Personal Contact Info</option>
+                <option value="abusive"       <%= query.reason === 'abusive'       ? 'selected' : '' %>>Abusive / Inappropriate</option>
+                <option value="fake"          <%= query.reason === 'fake'          ? 'selected' : '' %>>Fake / Fabricated</option>
+                <option value="other"         <%= query.reason === 'other'         ? 'selected' : '' %>>Other</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4 d-flex gap-2">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-1"></i>Filter
+              </button>
+              <a href="/admin/reports" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Report Queue Table -->
+      <div class="admin-card">
+        <div class="admin-card-body p-0">
+          <% if (reports.length === 0) { %>
+            <div class="text-center py-5">
+              <i class="fas fa-flag fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No reports matching your filter</h5>
+              <p class="text-muted">Great job! The report queue is clean.</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="admin-table table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Post Title</th>
+                    <th>Company</th>
+                    <th>Post Status</th>
+                    <th>Verified</th>
+                    <th>Open Reports</th>
+                    <th>Reasons</th>
+                    <th>Newest Report</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% reports.forEach(function(r) { %>
+                    <tr>
+                      <td>
+                        <a href="/admin/reports/<%= r.blogId %>" class="fw-semibold text-decoration-none">
+                          <%= r.postTitle ? r.postTitle.substring(0, 60) : '(No title)' %><%= r.postTitle && r.postTitle.length > 60 ? '…' : '' %>
+                        </a>
+                      </td>
+                      <td>
+                        <span class="small fw-semibold"><%= r.companyName || '—' %></span>
+                      </td>
+                      <td>
+                        <% if (r.postStatus === 'published') { %>
+                          <span class="badge badge-published">Published</span>
+                        <% } else if (r.postStatus === 'hidden') { %>
+                          <span class="badge badge-hidden">Hidden</span>
+                        <% } else if (r.postStatus === 'featured') { %>
+                          <span class="badge badge-featured">Featured</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary"><%= r.postStatus %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (r.verified) { %>
+                          <span class="badge verified-badge" title="Verified: a Blogify moderator checked this experience. It is not a guarantee that every detail is correct.">
+                            <i class="fas fa-check-circle me-1"></i>Verified
+                          </span>
+                        <% } else { %>
+                          <span class="text-muted small">No</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (r.openReports > 0) { %>
+                          <span class="badge bg-danger"><%= r.openReports %> open</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary">0 open</span>
+                        <% } %>
+                        <small class="text-muted d-block"><%= r.totalReports %> total</small>
+                      </td>
+                      <td>
+                        <% if (r.reasons && r.reasons.length) { %>
+                          <div class="d-flex flex-wrap gap-1">
+                            <% r.reasons.forEach(function(reason) { %>
+                              <span class="badge bg-light text-dark border small"><%= reason %></span>
+                            <% }); %>
+                          </div>
+                        <% } else { %>
+                          <span class="text-muted small">—</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <small><%= r.newestReportDate ? new Date(r.newestReportDate).toLocaleString() : '—' %></small>
+                      </td>
+                      <td>
+                        <a href="/admin/reports/<%= r.blogId %>" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-gavel me-1"></i>Review
+                        </a>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (pages > 1) { %>
+              <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                <small class="text-muted">Showing page <%= page %> of <%= pages %></small>
+                <nav>
+                  <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+                      <a class="page-link" href="/admin/reports?page=<%= page - 1 %>&status=<%= query.status %>&reason=<%= query.reason %>">Previous</a>
+                    </li>
+                    <% for (let p = 1; p <= pages; p++) { %>
+                      <li class="page-item <%= p === page ? 'active' : '' %>">
+                        <a class="page-link" href="/admin/reports?page=<%= p %>&status=<%= query.status %>&reason=<%= query.reason %>"><%= p %></a>
+                      </li>
+                    <% } %>
+                    <li class="page-item <%= page >= pages ? 'disabled' : '' %>">
+                      <a class="page-link" href="/admin/reports?page=<%= page + 1 %>&status=<%= query.status %>&reason=<%= query.reason %>">Next</a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <title>My Interview Experiences - Blogify</title>
+</head>
+<body>
+  <%- include("../partials/nav") %>
+
+  <div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="blog-title mb-1">
+          <i class="fas fa-user-tie me-2 text-primary"></i>My Interview Experiences
+        </h1>
+        <p class="text-muted mb-0">Manage experiences you have submitted</p>
+      </div>
+      <a href="/experiences/new" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Share New Experience
+      </a>
+    </div>
+
+    <% if (experiences.length === 0) { %>
+      <div class="card p-5 text-center shadow-sm border-0">
+        <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+        <h4 class="text-dark fw-bold">No experiences shared yet</h4>
+        <p class="text-muted">Help juniors by sharing your interview rounds, questions, and tips!</p>
+        <div class="mt-3">
+          <a href="/experiences/new" class="btn btn-primary">Share Interview Experience</a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="row g-4">
+        <% experiences.forEach(function(exp) { %>
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+              <div class="card-body d-flex flex-column p-4">
+                <!-- Status & Outcome Badges -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                  <div>
+                    <span class="badge bg-light text-dark border">
+                      <%= exp.driveType %>
+                    </span>
+                    <span class="badge badge-outcome-<%= exp.outcome %>">
+                      <%= exp.outcome.charAt(0).toUpperCase() + exp.outcome.slice(1) %>
+                    </span>
+                  </div>
+                  <div>
+                    <% if (exp.status === 'published') { %>
+                      <span class="badge bg-success">Published</span>
+                    <% } else if (exp.status === 'hidden') { %>
+                      <span class="badge bg-warning text-dark"><i class="fas fa-eye-slash me-1"></i>Hidden</span>
+                    <% } else if (exp.status === 'featured') { %>
+                      <span class="badge bg-info text-dark">Featured</span>
+                    <% } %>
+                    <% if (exp.verified) { %>
+                      <span class="badge verified-badge ms-1" title="Verified: a Blogify moderator checked this experience. It is not a guarantee that every detail is correct.">
+                        <i class="fas fa-check-circle me-1"></i>Verified
+                      </span>
+                    <% } %>
+                  </div>
+                </div>
+
+                <% if (exp.status === 'hidden') { %>
+                  <div class="alert alert-warning py-2 px-3 mb-3 small">
+                    <% if (exp.moderationReason) { %>
+                      <strong>Hidden by moderators: <%= exp.moderationReason %></strong>
+                    <% } else { %>
+                      <strong>Hidden by moderators.</strong>
+                    <% } %>
+                    <% if (exp.moderationNote) { %>
+                      <div class="mt-1 text-muted"><%= exp.moderationNote %></div>
+                    <% } %>
+                  </div>
+                <% } %>
+
+                <!-- Title & Company -->
+                <h5 class="card-title fw-bold text-dark mb-1">
+                  <% if (exp.companySlug) { %>
+                    <a href="/company/<%= exp.companySlug %>" class="text-decoration-none text-dark hover-primary">
+                      <%= exp.company %>
+                    </a>
+                  <% } else { %>
+                    <a href="/experiences/<%= exp.id %>" class="text-decoration-none text-dark hover-primary">
+                      <%= exp.company %>
+                    </a>
+                  <% } %>
+                </h5>
+                <div class="text-muted small mb-2">
+                  <%= exp.role %> &bull; <%= exp.year %>
+                </div>
+                <div class="small text-muted mb-3">
+                  Difficulty: <%= exp.difficulty %>/5 &bull;
+                  <% if (exp.anonymous) { %>
+                    <span class="text-secondary"><i class="fas fa-user-secret me-1"></i>Posted Anonymously</span>
+                  <% } else { %>
+                    <span class="text-secondary"><i class="fas fa-globe me-1"></i>Public</span>
+                  <% } %>
+                </div>
+
+                <!-- Action Buttons: View, Edit, Delete -->
+                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                  <a href="/experiences/<%= exp.id %>" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-eye me-1"></i>View
+                  </a>
+                  <div class="d-flex gap-2">
+                    <a href="/experiences/<%= exp.id %>/edit" class="btn btn-sm btn-outline-primary" title="Edit Experience">
+                      <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <form action="/experiences/<%= exp.id %>/delete" method="POST" class="d-inline delete-exp-form">
+                      <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Experience">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+
+  <%- include("../partials/scripts") %>
+  <script src="/js/mine.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <title>Companies - Campus Interview Experiences | Blogify</title>
+  <meta name="description" content="Browse interview experiences across top companies, explore rounds, and prepare effectively.">
+</head>
+<body>
+  <%- include("../partials/nav") %>
+
+  <!-- Hero Header -->
+  <div class="bg-light py-5 border-bottom mb-4">
+    <div class="container text-center">
+      <h1 class="display-5 fw-bold text-dark mb-2">Company Directory</h1>
+      <p class="lead text-muted mx-auto mb-4 hero-lead-text">
+        Explore interview experiences, difficulty levels, and hiring rounds across top tech companies.
+      </p>
+
+      <!-- Search Bar -->
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <form action="/companies" method="GET" class="d-flex gap-2">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input
+                type="text"
+                name="q"
+                class="form-control border-start-0"
+                placeholder="Search company by name or alias (e.g. Google, TCS, AWS)..."
+                value="<%= search %>"
+                maxlength="50"
+              >
+            </div>
+            <button type="submit" class="btn btn-primary px-4">Search</button>
+            <% if (search) { %>
+              <a href="/companies" class="btn btn-outline-secondary">Reset</a>
+            <% } %>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+    <% if (companies.length === 0) { %>
+      <div class="card shadow-sm border-0 text-center py-5">
+        <div class="card-body">
+          <i class="fas fa-building fa-4x text-muted mb-3"></i>
+          <h3 class="h5 fw-bold text-dark mb-2">No Companies Found</h3>
+          <p class="text-muted mb-4 empty-lead-text">
+            <% if (search) { %>
+              No company matching "<%= search %>" has interview experiences yet.
+            <% } else { %>
+              No companies currently have published interview experiences.
+            <% } %>
+          </p>
+          <div>
+            <% if (search) { %>
+              <a href="/companies" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-undo me-1"></i>View All Companies
+              </a>
+            <% } %>
+            <% if (locals.user) { %>
+              <a href="/experiences/new" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i>Share First Experience
+              </a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h5 fw-bold text-dark mb-0">
+          <% if (search) { %>
+            Search Results for "<%= search %>" (<%= totalCompanies %>)
+          <% } else { %>
+            All Companies (<%= totalCompanies %>)
+          <% } %>
+        </h2>
+        <span class="text-muted small">Sorted by experience count</span>
+      </div>
+
+      <!-- Companies Grid -->
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+        <% companies.forEach(function(comp) { %>
+          <div class="col">
+            <div class="card h-100 shadow-sm border-0 company-card">
+              <div class="card-body d-flex flex-column p-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h3 class="h5 fw-bold text-dark mb-0">
+                    <a href="/company/<%= comp.slug %>" class="text-decoration-none text-dark hover-primary">
+                      <%= comp.name %>
+                    </a>
+                    <% if (comp.isDemo) { %>
+                      <span class="badge bg-secondary ms-1">Demo</span>
+                    <% } %>
+                  </h3>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                    <%= comp.experienceCount %> <%= comp.experienceCount === 1 ? 'Experience' : 'Experiences' %>
+                  </span>
+                </div>
+
+                <% if (comp.aliases && comp.aliases.length > 0) { %>
+                  <div class="text-muted small mb-3">
+                    <i class="fas fa-tags me-1"></i>Aliases: <%= comp.aliases.join(", ") %>
+                  </div>
+                <% } else { %>
+                  <div class="text-muted small mb-3">&nbsp;</div>
+                <% } %>
+
+                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                  <a href="/experiences?company=<%= comp._id %>" class="small text-muted text-decoration-none">
+                    <i class="fas fa-filter me-1"></i>Filter posts
+                  </a>
+                  <a href="/company/<%= comp.slug %>" class="btn btn-sm btn-outline-primary">
+                    View Company <i class="fas fa-arrow-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <nav aria-label="Company directory pagination" class="d-flex justify-content-center mt-4">
+          <ul class="pagination">
+            <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
+              <a
+                class="page-link"
+                href="/companies?page=<%= currentPage - 1 %><%= search ? '&q=' + encodeURIComponent(search) : '' %>"
+              >
+                Previous
+              </a>
+            </li>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a
+                  class="page-link"
+                  href="/companies?page=<%= i %><%= search ? '&q=' + encodeURIComponent(search) : '' %>"
+                >
+                  <%= i %>
+                </a>
+              </li>
+            <% } %>
+            <li class="page-item <%= currentPage >= totalPages ? 'disabled' : '' %>">
+              <a
+                class="page-link"
+                href="/companies?page=<%= currentPage + 1 %><%= search ? '&q=' + encodeURIComponent(search) : '' %>"
+              >
+                Next
+              </a>
+            </li>
+          </ul>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+
+  <%- include("../partials/footer") %>
+  <%- include("../partials/scripts") %>
+</body>
+</html>
+

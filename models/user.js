@@ -60,6 +60,16 @@ const userSchema = new mongoose.Schema(
     lockUntil: {
       type: Date,
     },
+    isDemo: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    demoKey: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
   },
   { timestamps: true }
 );
@@ -96,6 +106,11 @@ userSchema.static(
   async function (email, password) {
     const user = await this.findOne({ email });
     if (!user) throw new Error("User not Found");
+
+    // Demo users cannot sign in: normal invalid-credentials message
+    if (user.isDemo) {
+      throw new Error("Incorrect Password");
+    }
 
     // Check if account is locked
     if (user.lockUntil && user.lockUntil > Date.now()) {

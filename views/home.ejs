@@ -91,15 +91,16 @@
                           </small>
                           <% } else { %>
                             <img src="/Images/default.svg" class="rounded-circle me-2" width="32" height="32" />
-                            <small class="text-muted">Anonymous</small>
+                            <small class="text-muted">Deleted user</small>
                             <% } %>
                       </div>
 
                       <h5 class="card-title fw-bold text-truncate">
-                        <%= blog.title %>
+                        <%= blog.title || 'Untitled' %>
                       </h5>
                       <p class="card-text text-muted flex-grow-1" style="min-height: 80px;">
-                        <%= blog.body.length> 180 ? blog.body.substring(0, 180) + '...' : blog.body %>
+                        <% const homeBody = (blog && blog.body) ? String(blog.body) : ''; %>
+                        <%= homeBody.length > 180 ? homeBody.substring(0, 180) + '...' : homeBody %>
                       </p>
                       <div class="mt-auto">
                         <a href="/blog/<%= blog._id %>" class="btn btn-primary w-100">
@@ -110,7 +111,7 @@
                     <div class="card-footer bg-transparent border-0">
                       <small class="text-muted">
                         <i class="fas fa-calendar me-1"></i>
-                        <%= new Date(blog.createdAt).toLocaleDateString() %>
+                        <%= blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : '' %>
                       </small>
                     </div>
                   </div>

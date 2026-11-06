@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head') %>
+  <title>Manage <%= company.name %> - Admin - Blogify</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-wrapper">
+    <%- include('../partials/sidebar', { currentPage: 'companies' }) %>
+
+    <div class="admin-main">
+      <%- include('../partials/topbar', { pageTitle: 'Company Details' }) %>
+
+      <div class="admin-content">
+        <%- include('../partials/flash') %>
+
+        <!-- Breadcrumb & Header -->
+        <div class="mb-4">
+          <a href="/admin/companies" class="text-decoration-none small text-muted">
+            <i class="fas fa-arrow-left me-1"></i>Back to Companies
+          </a>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <div>
+              <h4 class="mb-0">
+                <%= company.name %>
+                <% if (company.mergedInto) { %>
+                  <span class="badge bg-warning-subtle text-warning fs-6 ms-2">
+                    <i class="fas fa-code-branch me-1"></i>Merged
+                  </span>
+                <% } else { %>
+                  <span class="badge bg-success-subtle text-success fs-6 ms-2">Active</span>
+                <% } %>
+              </h4>
+              <small class="text-muted">
+                Public Slug: <code><%= company.slug %></code> &bull; Created: <%= new Date(company.createdAt).toLocaleDateString() %>
+              </small>
+            </div>
+            <% if (!company.mergedInto) { %>
+              <a href="/company/<%= company.slug %>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-external-link-alt me-1"></i>View Public Page
+              </a>
+            <% } %>
+          </div>
+        </div>
+
+        <% if (company.mergedInto) { %>
+          <div class="alert alert-warning d-flex align-items-center mb-4">
+            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+            <div>
+              <div class="fw-bold">This company has been merged into <a href="/admin/companies/<%= company.mergedInto._id %>" class="alert-link"><%= company.mergedInto.name %></a>.</div>
+              <small>All public routes (including <code>/company/<%= company.slug %></code>) automatically issue a 301 redirect to the target company. Experiences posted under this name automatically resolve to <%= company.mergedInto.name %>.</small>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Metrics Row -->
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-lg-3">
+            <div class="admin-card p-3">
+              <div class="text-muted small">Published Experiences</div>
+              <h3 class="mb-0 text-success"><%= stats.publishedCount %></h3>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="admin-card p-3">
+              <div class="text-muted small">Hidden Experiences</div>
+              <h3 class="mb-0 text-secondary"><%= stats.hiddenCount %></h3>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="admin-card p-3">
+              <div class="text-muted small">Total Blogs Referencing</div>
+              <h3 class="mb-0 text-primary"><%= stats.totalBlogs %></h3>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="admin-card p-3">
+              <div class="text-muted small">Merged Into This</div>
+              <h3 class="mb-0 text-info"><%= stats.mergedCompaniesCount %></h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Left Column: Rename & Slug -->
+          <div class="col-lg-6">
+            <!-- Rename Card -->
+            <div class="admin-card mb-4 p-4">
+              <h5 class="mb-3"><i class="fas fa-edit me-2 text-primary"></i>Rename Company</h5>
+              <form method="POST" action="/admin/companies/<%= company._id %>/rename">
+                <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Company Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    class="form-control"
+                    value="<%= company.name %>"
+                    required
+                    minlength="2"
+                    maxlength="60"
+                  >
+                  <div class="form-text mb-2">
+                    Updates primary display name and normalized key. The slug will remain unchanged to prevent broken URLs.
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="keepOldAsAlias" value="1" id="keepOldAsAlias" checked>
+                    <label class="form-check-label small" for="keepOldAsAlias">
+                      Keep the old name as an alias
+                    </label>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Save Name</button>
+              </form>
+            </div>
+
+            <!-- Slug Card -->
+            <div class="admin-card mb-4 p-4">
+              <h5 class="mb-3"><i class="fas fa-link me-2 text-primary"></i>Company Slug</h5>
+              <form method="POST" action="/admin/companies/<%= company._id %>/slug">
+                <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Current Slug</label>
+                  <input
+                    type="text"
+                    name="slug"
+                    class="form-control"
+                    value="<%= company.slug %>"
+                    required
+                    pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                    maxlength="80"
+                  >
+                  <div class="form-text">
+                    Lowercase letters, digits, and hyphens only (max 80 chars). Old slugs are saved and issue a permanent 301 redirect.
+                  </div>
+                </div>
+
+                <% if (company.previousSlugs && company.previousSlugs.length > 0) { %>
+                  <div class="mb-3">
+                    <label class="form-label small text-muted">Previous Slugs (Redirecting 301):</label>
+                    <div>
+                      <% company.previousSlugs.forEach(function(ps) { %>
+                        <code class="badge bg-light text-dark border me-1"><%= ps %></code>
+                      <% }); %>
+                    </div>
+                  </div>
+                <% } %>
+
+                <button type="submit" class="btn btn-sm btn-primary">Update Slug</button>
+              </form>
+            </div>
+
+            <!-- Companies Merged into This Card (if any) -->
+            <% if (stats.mergedCompanies && stats.mergedCompanies.length > 0) { %>
+              <div class="admin-card mb-4 p-4">
+                <h5 class="mb-3"><i class="fas fa-code-branch me-2 text-info"></i>Merged Duplicates (<%= stats.mergedCompanies.length %>)</h5>
+                <ul class="list-group list-group-flush small">
+                  <% stats.mergedCompanies.forEach(function(mc) { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <div>
+                        <strong><%= mc.name %></strong>
+                        <span class="text-muted ms-2">(<%= mc.slug %>)</span>
+                      </div>
+                      <a href="/admin/companies/<%= mc._id %>" class="btn btn-sm btn-outline-secondary">View</a>
+                    </li>
+                  <% }); %>
+                </ul>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Right Column: Aliases, Merge, Delete -->
+          <div class="col-lg-6">
+            <!-- Aliases Card -->
+            <div class="admin-card mb-4 p-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="fas fa-tags me-2 text-primary"></i>Known Aliases</h5>
+                <span class="small text-muted"><%= (company.aliases || []).length %> / 50</span>
+              </div>
+              <p class="small text-muted">
+                Aliases help match alternate names (e.g., TCS for Tata Consultancy Services). Experiences submitted with an alias automatically resolve to this company.
+              </p>
+
+              <!-- Current Aliases -->
+              <div class="mb-3">
+                <% if (company.aliases && company.aliases.length > 0) { %>
+                  <div class="d-flex flex-wrap gap-2">
+                    <% company.aliases.forEach(function(a) { %>
+                      <div class="badge bg-light text-dark border d-flex align-items-center gap-1 p-2">
+                        <span><%= a %></span>
+                        <form method="POST" action="/admin/companies/<%= company._id %>/aliases/remove" class="d-inline m-0 p-0">
+                          <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                          <input type="hidden" name="alias" value="<%= a %>">
+                          <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1" title="Remove alias" aria-label="Remove alias">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </form>
+                      </div>
+                    <% }); %>
+                  </div>
+                <% } else { %>
+                  <span class="text-muted small">No aliases added yet.</span>
+                <% } %>
+              </div>
+
+              <!-- Add Alias Form -->
+              <% if ((company.aliases || []).length < 50) { %>
+                <form method="POST" action="/admin/companies/<%= company._id %>/aliases/add" class="row g-2 align-items-center">
+                  <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                  <div class="col">
+                    <input
+                      type="text"
+                      name="alias"
+                      class="form-control form-control-sm"
+                      placeholder="Add an alias (e.g., Google India)..."
+                      required
+                      minlength="2"
+                      maxlength="60"
+                    >
+                  </div>
+                  <div class="col-auto">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Add Alias</button>
+                  </div>
+                </form>
+              <% } else { %>
+                <small class="text-warning">Maximum 50 aliases reached.</small>
+              <% } %>
+            </div>
+
+            <!-- Merge Company Card -->
+            <% if (!company.mergedInto) { %>
+              <div class="admin-card mb-4 p-4 border-warning">
+                <h5 class="mb-2 text-warning"><i class="fas fa-compress-arrows-alt me-2"></i>Merge Duplicate Company</h5>
+                <p class="small text-muted mb-3">
+                  If this company is a duplicate of another, you can merge it. All <strong><%= stats.totalBlogs %></strong> experiences and <strong><%= (company.aliases || []).length %></strong> aliases will move to the canonical target company.
+                </p>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-warning"
+                  id="openMergeModalBtn"
+                  data-source-id="<%= company._id %>"
+                  data-source-name="<%= company.name.replace(/"/g, '&quot;') %>"
+                  data-source-exps="<%= stats.totalBlogs %>"
+                  data-source-aliases="<%= (company.aliases || []).length %>"
+                >
+                  <i class="fas fa-code-branch me-1"></i>Merge into Target Company...
+                </button>
+              </div>
+            <% } %>
+
+            <!-- Delete Company Card -->
+            <div class="admin-card p-4 border-danger">
+              <h5 class="mb-2 text-danger"><i class="fas fa-trash-alt me-2"></i>Delete Company</h5>
+              <% if (stats.totalBlogs > 0 || stats.mergedCompaniesCount > 0) { %>
+                <p class="small text-muted mb-2">
+                  Cannot delete this company because:
+                  <ul class="small text-muted mb-0">
+                    <% if (stats.totalBlogs > 0) { %>
+                      <li><strong><%= stats.totalBlogs %></strong> interview experience(s) reference it.</li>
+                    <% } %>
+                    <% if (stats.mergedCompaniesCount > 0) { %>
+                      <li><strong><%= stats.mergedCompaniesCount %></strong> other company/companies have been merged into it.</li>
+                    <% } %>
+                  </ul>
+                </p>
+                <button type="button" class="btn btn-sm btn-outline-danger" disabled>
+                  <i class="fas fa-lock me-1"></i>Delete Disabled
+                </button>
+              <% } else { %>
+                <p class="small text-muted mb-3">
+                  This company has 0 experiences and 0 merged companies. It can be safely deleted.
+                </p>
+                <form method="POST" action="/admin/companies/<%= company._id %>/delete" id="deleteCompanyForm">
+                  <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                  <button type="button" class="btn btn-sm btn-danger" id="deleteCompanyBtn" data-company-name="<%= company.name.replace(/"/g, '&quot;') %>">
+                    <i class="fas fa-trash me-1"></i>Delete Company
+                  </button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Merge Confirmation Modal -->
+  <div class="modal fade" id="mergeModal" tabindex="-1" aria-labelledby="mergeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="mergeModalLabel">
+            <i class="fas fa-code-branch text-warning me-2"></i>Merge Company
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" action="/admin/companies/<%= company._id %>/merge" id="mergeForm">
+          <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+          <div class="modal-body">
+            <div class="alert alert-info small mb-2">
+              Merging moves all experiences and aliases from <strong><%= company.name %></strong> to a target company. The source document is preserved so old links redirect via 301.
+            </div>
+            <div class="alert alert-warning small mb-3">
+              <i class="fas fa-exclamation-triangle me-1"></i><strong>Note:</strong> A merge cannot be undone from the admin panel.
+            </div>
+
+            <!-- Target Search -->
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">1. Search & Select Target Company <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                id="targetSearchInput"
+                class="form-control form-control-sm mb-2"
+                placeholder="Type to search active companies..."
+                autocomplete="off"
+              >
+              <select name="targetId" id="targetCompanySelect" class="form-select form-select-sm" required size="5">
+                <option value="" disabled selected>— Type search above to find target —</option>
+              </select>
+            </div>
+
+            <!-- Preview Container -->
+            <div id="mergePreviewBox" class="alert alert-secondary small d-none mb-3">
+              <div class="fw-bold mb-1">Merge Preview:</div>
+              <div id="mergePreviewText"></div>
+            </div>
+
+            <!-- Confirmation Name -->
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">
+                2. Type source company name <code class="text-dark"><%= company.name %></code> to confirm <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                name="confirmName"
+                id="mergeConfirmNameInput"
+                class="form-control form-control-sm"
+                placeholder="Type '<%= company.name %>' exactly"
+                required
+                autocomplete="off"
+              >
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-warning" id="submitMergeBtn" disabled>
+              <i class="fas fa-check me-1"></i>Confirm & Merge
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin-companies.js" defer></script>
+</body>
+</html>
+

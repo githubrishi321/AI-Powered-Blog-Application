@@ -23,6 +23,16 @@
             <i class="fas fa-home me-1"></i><span class="d-none d-sm-inline">Home</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/experiences">
+            <i class="fas fa-briefcase me-1"></i><span>Experiences</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/companies">
+            <i class="fas fa-building me-1"></i><span>Companies</span>
+          </a>
+        </li>
       </ul>
 
       <ul class="navbar-nav">
@@ -34,6 +44,11 @@
             </a>
           </li>
           <% } %>
+          <li class="nav-item">
+            <a class="nav-link" href="/experiences/new">
+              <i class="fas fa-plus-circle me-1"></i><span class="d-none d-sm-inline">Share Experience</span>
+            </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="/blog/add-new">
               <i class="fas fa-plus me-1"></i><span class="d-none d-sm-inline">Add Blog</span>
@@ -65,6 +80,12 @@
               </li>
               <li><hr class="dropdown-divider"></li>
               <% } %>
+              <li>
+                <a class="dropdown-item" href="/experiences/mine">
+                  <i class="fas fa-user-tie me-2 text-primary"></i>My Experiences
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
               <li>
                 <a class="dropdown-item" href="/user/logout">
                   <i class="fas fa-sign-out-alt me-2"></i>Logout

@@ -73,8 +73,8 @@
                     class="form-control"
                     rows="15"
                     placeholder="Blog content..."
-                    required
-                  ><%= blog.body %></textarea>
+                    <%= blog.type === 'experience' ? '' : 'required' %>
+                  ><%= blog.body || '' %></textarea>
                 </div>
               </div>
             </div>

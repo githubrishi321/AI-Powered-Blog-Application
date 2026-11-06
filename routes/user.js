@@ -3,6 +3,7 @@ const router = Router();
 const User = require("../models/user");
 const LoginActivity = require("../models/loginActivity");
 const { getSettings } = require("../services/settings");
+const { doubleCsrfProtection } = require("../middlewares/csrf");
 
 // Helper to get client IP
 function getClientIP(req) {
@@ -21,7 +22,7 @@ router.get("/signup", (req, res) => {
   return res.render("signup", { user: req.user });
 });
 
-router.post("/signup", async (req, res) => {
+router.post("/signup", doubleCsrfProtection, async (req, res) => {
   try {
     // Check site settings for open registration
     const settings = await getSettings();
@@ -70,7 +71,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-router.post("/signin", async (req, res) => {
+router.post("/signin", doubleCsrfProtection, async (req, res) => {
   const { email, password } = req.body;
   const ip = getClientIP(req);
   const userAgent = req.headers["user-agent"] || "";

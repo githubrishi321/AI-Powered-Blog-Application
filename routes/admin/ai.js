@@ -4,7 +4,7 @@ const Settings = require("../../models/settings");
 const AiLog = require("../../models/aiLog");
 const { getSettings, invalidateCache } = require("../../services/settings");
 const { logAudit } = require("../../services/auditLogger");
-const { DEFAULT_TONE_PROMPTS } = require("../../services/ai");
+const { DEFAULT_TONE_PROMPTS, getStartOfDayIST, RETIRED_MODELS } = require("../../services/ai");
 
 function getIP(req) {
   return req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown";
@@ -29,11 +29,19 @@ router.get("/", async (req, res) => {
       };
     }
 
-    // Usage stats: per tone, per day (last 7 days)
+    // Usage stats: per tone, per day (last 7 days), matching action: "tone" or legacy unmigrated rows where action does not exist
     const now = new Date();
     const start7d = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    const startOfDay = getStartOfDayIST(now);
+
     const toneStats = await AiLog.aggregate([
-      { $match: { status: "success", createdAt: { $gte: start7d } } },
+      {
+        $match: {
+          status: "success",
+          $or: [{ action: "tone" }, { action: { $exists: false } }],
+          createdAt: { $gte: start7d },
+        },
+      },
       { $group: { _id: "$tone", count: { $sum: 1 } } },
     ]);
 
@@ -41,9 +49,39 @@ router.get("/", async (req, res) => {
     for (const ts of toneStats) toneUsage[ts._id] = ts.count;
 
     const totalToday = await AiLog.countDocuments({
-      status: "success",
-      createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
+      createdAt: { $gte: startOfDay },
     });
+
+    // Structure notes usage stats
+    const [structureToday, structureSuccess7d, structureError7d] = await Promise.all([
+      AiLog.countDocuments({ action: "structure", createdAt: { $gte: startOfDay } }),
+      AiLog.countDocuments({ action: "structure", status: "success", createdAt: { $gte: start7d } }),
+      AiLog.countDocuments({ action: "structure", status: "error", createdAt: { $gte: start7d } }),
+    ]);
+
+    const structureStats = {
+      today: structureToday,
+      success7d: structureSuccess7d,
+      error7d: structureError7d,
+    };
+
+    // Check if any AI call in the last 24 hours failed with model_not_found
+    const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const hasModelRejected = Boolean(
+      await AiLog.exists({
+        errorCode: "model_not_found",
+        createdAt: { $gte: last24h },
+      })
+    );
+
+    // Check if stored model is retired
+    let retiredModelNotice = null;
+    if (settings.aiModel && RETIRED_MODELS[settings.aiModel]) {
+      retiredModelNotice = {
+        stored: settings.aiModel,
+        replacement: RETIRED_MODELS[settings.aiModel],
+      };
+    }
 
     res.render("admin/ai/control", {
       user: req.user,
@@ -52,6 +90,9 @@ router.get("/", async (req, res) => {
       tones: TONES,
       toneUsage,
       totalToday,
+      structureStats,
+      hasModelRejected,
+      retiredModelNotice,
       // Show GROQ_API_KEY only as configured: yes/no — never the actual key
       groqConfigured: !!process.env.GROQ_API_KEY,
       flash: req.flash ? req.flash() : {},
@@ -65,10 +106,18 @@ router.get("/", async (req, res) => {
 // POST /admin/ai/save
 router.post("/save", async (req, res) => {
   try {
-    const before = { aiEnabled: (await getSettings()).aiEnabled };
+    const currentSettings = await getSettings();
+    const before = {
+      aiEnabled: currentSettings.aiEnabled,
+      aiStructureEnabled: currentSettings.aiStructureEnabled !== false,
+      aiModel: currentSettings.aiModel,
+      aiMaxInputLength: currentSettings.aiMaxInputLength,
+      aiDailyUserLimit: currentSettings.aiDailyUserLimit,
+    };
 
     const aiEnabled = req.body.aiEnabled === "on" || req.body.aiEnabled === "true" || req.body.aiEnabled === "1";
-    const aiModel = req.body.aiModel?.trim() || "llama-3.3-70b-versatile";
+    const aiStructureEnabled = req.body.aiStructureEnabled === "on" || req.body.aiStructureEnabled === "true" || req.body.aiStructureEnabled === "1";
+    const aiModel = req.body.aiModel?.trim() || "openai/gpt-oss-120b";
     const aiMaxInputLength = parseInt(req.body.aiMaxInputLength) || 5000;
     const aiDailyUserLimit = parseInt(req.body.aiDailyUserLimit) || 0;
 
@@ -84,6 +133,7 @@ router.post("/save", async (req, res) => {
     let settings = await Settings.findOne({});
     if (!settings) settings = new Settings({});
     settings.aiEnabled = aiEnabled;
+    settings.aiStructureEnabled = aiStructureEnabled;
     settings.aiModel = aiModel;
     settings.aiMaxInputLength = aiMaxInputLength;
     settings.aiDailyUserLimit = aiDailyUserLimit;
@@ -97,7 +147,7 @@ router.post("/save", async (req, res) => {
       targetType: "settings",
       targetLabel: "AI Configuration",
       before,
-      after: { aiEnabled, aiModel, aiMaxInputLength, aiDailyUserLimit },
+      after: { aiEnabled, aiStructureEnabled, aiModel, aiMaxInputLength, aiDailyUserLimit },
       ip: getIP(req),
     });
 

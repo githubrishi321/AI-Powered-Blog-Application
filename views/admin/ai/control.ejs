@@ -13,18 +13,42 @@
     <div class="admin-content">
       <%- include('../partials/flash') %>
 
+      <% if (locals.retiredModelNotice) { %>
+        <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+          <i class="fas fa-info-circle me-2"></i>
+          <div>Stored model <%= retiredModelNotice.stored %> is retired. <%= retiredModelNotice.replacement %> is being used. Click Save to update it.</div>
+        </div>
+      <% } %>
+
+      <% if (locals.hasModelRejected) { %>
+        <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <div>The configured AI model was rejected by Groq. Choose another model below.</div>
+        </div>
+      <% } %>
+
       <!-- Top info cards -->
       <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="stat-card">
             <div class="stat-icon purple"><i class="fas fa-robot"></i></div>
             <div>
               <div class="stat-value"><%= totalToday %></div>
-              <div class="stat-label">Conversions Today</div>
+              <div class="stat-label">AI Requests Today</div>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon teal"><i class="fas fa-file-alt"></i></div>
+            <div>
+              <div class="stat-value"><%= structureStats ? structureStats.today : 0 %></div>
+              <div class="stat-label">Notes Structured Today</div>
+              <small class="text-muted"><%= structureStats ? structureStats.success7d : 0 %> ok / <%= structureStats ? structureStats.error7d : 0 %> err (7d)</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
           <div class="stat-card">
             <div class="stat-icon <%= settings.aiEnabled ? 'green' : 'red' %>">
               <i class="fas fa-<%= settings.aiEnabled ? 'check-circle' : 'ban' %>"></i>
@@ -35,7 +59,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="stat-card">
             <div class="stat-icon <%= groqConfigured ? 'teal' : 'orange' %>">
               <i class="fas fa-key"></i>
@@ -65,16 +89,31 @@
                 <div class="form-check form-switch mb-3">
                   <input class="form-check-input" type="checkbox" role="switch" id="aiEnabled" name="aiEnabled" <%= settings.aiEnabled ? 'checked' : '' %>>
                   <label class="form-check-label fw-bold" for="aiEnabled">
-                    Enable AI Tone Converter Feature Globally
+                    Enable AI Features Globally (Tone Converter & Structure My Notes)
                   </label>
-                  <div class="form-text">When disabled, all /ai/tone requests return a 503 service unavailable response.</div>
+                  <div class="form-text">When disabled, all /ai/tone and /ai/structure requests return a 503 service unavailable response.</div>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                  <input class="form-check-input" type="checkbox" role="switch" id="aiStructureEnabled" name="aiStructureEnabled" <%= settings.aiStructureEnabled !== false ? 'checked' : '' %>>
+                  <label class="form-check-label fw-bold" for="aiStructureEnabled">
+                    Enable "Structure My Notes" Feature
+                  </label>
+                  <div class="form-text">When disabled, all /ai/structure requests return a 503 service unavailable response.</div>
                 </div>
               </div>
 
               <div class="col-md-4">
                 <label class="form-label fw-bold">LLM Model Name</label>
-                <input type="text" name="aiModel" class="form-control" value="<%= settings.aiModel || 'llama-3.3-70b-versatile' %>" required>
-                <div class="form-text">e.g. <code>llama-3.3-70b-versatile</code></div>
+                <% const selectedModel = locals.retiredModelNotice ? retiredModelNotice.replacement : (settings.aiModel || 'openai/gpt-oss-120b'); %>
+                <select name="aiModel" class="form-select" required>
+                  <option value="openai/gpt-oss-120b" <%= (selectedModel === 'openai/gpt-oss-120b' || !selectedModel) ? 'selected' : '' %>>openai/gpt-oss-120b (Default)</option>
+                  <option value="openai/gpt-oss-20b" <%= selectedModel === 'openai/gpt-oss-20b' ? 'selected' : '' %>>openai/gpt-oss-20b</option>
+                  <% if (selectedModel && selectedModel !== 'openai/gpt-oss-120b' && selectedModel !== 'openai/gpt-oss-20b') { %>
+                    <option value="<%= selectedModel %>" selected><%= selectedModel %> (Custom)</option>
+                  <% } %>
+                </select>
+                <div class="form-text">e.g. <code>openai/gpt-oss-120b</code></div>
               </div>
 
               <div class="col-md-4">
@@ -86,7 +125,7 @@
               <div class="col-md-4">
                 <label class="form-label fw-bold">Daily User Limit</label>
                 <input type="number" name="aiDailyUserLimit" class="form-control" value="<%= settings.aiDailyUserLimit || 0 %>" min="0">
-                <div class="form-text">0 = unlimited conversions per day</div>
+                <div class="form-text">0 = unlimited AI requests per day</div>
               </div>
             </div>
           </div>

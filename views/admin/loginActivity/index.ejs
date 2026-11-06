@@ -91,7 +91,7 @@
                             <i class="fas fa-user me-1"></i><%= log.user.fullName || log.user.email %>
                           </a>
                         <% } else { %>
-                          <span class="text-muted small">No account</span>
+                          <span class="text-muted small"><%= log.success ? 'Deleted user' : 'No account' %></span>
                         <% } %>
                       </td>
                       <td>

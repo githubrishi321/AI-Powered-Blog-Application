@@ -25,7 +25,7 @@
       <div class="admin-card mb-4">
         <div class="admin-card-body">
           <form method="GET" action="/admin/blogs" class="row g-3 align-items-end">
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <label class="form-label small fw-semibold">Search</label>
               <input
                 type="text"
@@ -35,7 +35,15 @@
                 value="<%= query.search || '' %>"
               >
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
+              <label class="form-label small fw-semibold">Type</label>
+              <select name="type" class="form-select">
+                <option value="" <%= !query.type ? 'selected' : '' %>>All Types</option>
+                <option value="blog" <%= query.type === 'blog' ? 'selected' : '' %>>Blog</option>
+                <option value="experience" <%= query.type === 'experience' ? 'selected' : '' %>>Experience</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
               <label class="form-label small fw-semibold">Status</label>
               <select name="status" class="form-select">
                 <option value=""          <%= !query.status                  ? 'selected' : '' %>>All Status</option>
@@ -44,7 +52,15 @@
                 <option value="featured"  <%= query.status === 'featured'   ? 'selected' : '' %>>Featured</option>
               </select>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
+              <label class="form-label small fw-semibold">Verified</label>
+              <select name="verified" class="form-select">
+                <option value="" <%= !query.verified ? 'selected' : '' %>>All</option>
+                <option value="verified" <%= query.verified === 'verified' ? 'selected' : '' %>>Verified</option>
+                <option value="unverified" <%= query.verified === 'unverified' ? 'selected' : '' %>>Unverified</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
               <label class="form-label small fw-semibold">Sort</label>
               <select name="sort" class="form-select">
                 <option value="newest" <%= query.sort === 'newest' || !query.sort ? 'selected' : '' %>>Newest</option>
@@ -52,11 +68,11 @@
                 <option value="title"  <%= query.sort === 'title'  ? 'selected' : '' %>>Title</option>
               </select>
             </div>
-            <div class="col-6 col-md-2 d-flex gap-2">
-              <button type="submit" class="btn btn-primary w-100">
-                <i class="fas fa-search me-1"></i>Filter
+            <div class="col-6 col-md-1 d-flex gap-1">
+              <button type="submit" class="btn btn-primary w-100" title="Filter">
+                <i class="fas fa-search"></i>
               </button>
-              <a href="/admin/blogs" class="btn btn-outline-secondary">
+              <a href="/admin/blogs" class="btn btn-outline-secondary" title="Reset">
                 <i class="fas fa-times"></i>
               </a>
             </div>
@@ -92,6 +108,8 @@
                   <option value="delete">Delete Selected</option>
                   <option value="hide">Hide Selected</option>
                   <option value="publish">Publish Selected</option>
+                  <option value="verify">Verify Selected Experiences</option>
+                  <option value="unverify">Unverify Selected Experiences</option>
                 </select>
                 <button
                   type="submit"
@@ -107,6 +125,8 @@
                     <tr>
                       <th width="40"></th>
                       <th>Title</th>
+                      <th>Type</th>
+                      <th>Company</th>
                       <th>Author</th>
                       <th>Status</th>
                       <th>Date</th>
@@ -129,6 +149,9 @@
                         <td>
                           <div class="fw-semibold">
                             <%= b.title ? b.title.substring(0, 60) : '(No title)' %><%= b.title && b.title.length > 60 ? '…' : '' %>
+                            <% if (b.isDemo) { %>
+                              <span class="badge bg-secondary ms-1">Demo</span>
+                            <% } %>
                           </div>
                           <% const listCover = resolveCoverUrl(b); %>
                           <% if (listCover && !listCover.includes('blog-placeholder.svg')) { %>
@@ -138,11 +161,35 @@
                           <% } %>
                         </td>
                         <td>
+                          <% if (b.type === 'experience') { %>
+                            <span class="badge bg-primary text-light">Experience</span>
+                          <% } else { %>
+                            <span class="badge bg-secondary text-light">Blog</span>
+                          <% } %>
+                        </td>
+                        <td>
+                          <% if (b.type === 'experience') { %>
+                            <div class="small fw-semibold"><%= b.experience?.company?.name || '—' %></div>
+                            <% if (b.experience?.verified) { %>
+                              <span class="badge verified-badge" title="Verified: a Blogify moderator checked this experience. It is not a guarantee that every detail is correct.">
+                                <i class="fas fa-check-circle me-1"></i>Verified
+                              </span>
+                            <% } %>
+                          <% } else { %>
+                            <span class="text-muted small">—</span>
+                          <% } %>
+                        </td>
+                        <td>
                           <% if (b.createdBy) { %>
-                            <div class="small"><%= b.createdBy.fullName || '—' %></div>
+                            <div class="small">
+                              <%= b.createdBy.fullName || '—' %>
+                              <% if (b.experience?.anonymous) { %>
+                                <span class="badge bg-secondary ms-1">Anonymous</span>
+                              <% } %>
+                            </div>
                             <small class="text-muted"><%= b.createdBy.email || '' %></small>
                           <% } else { %>
-                            <span class="text-muted">—</span>
+                            <span class="text-muted">Deleted user</span>
                           <% } %>
                         </td>
                         <td>

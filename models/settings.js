@@ -33,6 +33,10 @@ const settingsSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    aiStructureEnabled: {
+      type: Boolean,
+      default: true,
+    },
     aiTones: {
       type: Map,
       of: new mongoose.Schema(
@@ -46,7 +50,7 @@ const settingsSchema = new mongoose.Schema(
     },
     aiModel: {
       type: String,
-      default: "llama-3.3-70b-versatile",
+      default: "openai/gpt-oss-120b",
     },
     aiMaxInputLength: {
       type: Number,

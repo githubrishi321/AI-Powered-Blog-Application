@@ -14,11 +14,20 @@
     </a>
 
     <div class="sidebar-section-label">Content</div>
+    <a href="/admin/reports" class="<%= currentPage === 'reports' ? 'active' : '' %>">
+      <i class="fas fa-flag"></i> Reports
+      <% if (typeof openReportsBadgeCount !== 'undefined' && openReportsBadgeCount > 0) { %>
+        <span class="badge bg-danger ms-auto"><%= openReportsBadgeCount %></span>
+      <% } %>
+    </a>
     <a href="/admin/users" class="<%= currentPage === 'users' ? 'active' : '' %>">
       <i class="fas fa-users"></i> Users
     </a>
     <a href="/admin/blogs" class="<%= currentPage === 'blogs' ? 'active' : '' %>">
       <i class="fas fa-newspaper"></i> Blogs
+    </a>
+    <a href="/admin/companies" class="<%= currentPage === 'companies' ? 'active' : '' %>">
+      <i class="fas fa-building"></i> Companies
     </a>
     <a href="/admin/comments" class="<%= currentPage === 'comments' ? 'active' : '' %>">
       <i class="fas fa-comments"></i> Comments
