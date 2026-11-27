@@ -6,6 +6,7 @@ const {
   getStartOfDayIST,
   structureInterviewNotes,
   parseAndSanitizeStructuredOutput,
+  answerChatQuestion,
 } = require("../services/ai");
 const {
   sanitizeString,
@@ -44,6 +45,23 @@ const structureLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 6,
   message: { error: "Too many structure requests. Please wait a few minutes before trying again." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    if (req.user && req.user._id) {
+      return String(req.user._id);
+    }
+    return req.ip;
+  },
+});
+
+// Rate limiter for Chat: 4 requests per 10 minutes per user
+// Stricter than structureLimiter — open-ended chat is more abuse-prone than
+// one-shot note structuring, and each call may scan the entire experience DB.
+const chatLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 4,
+  message: { error: "Too many chat requests. Please wait a few minutes before asking again." },
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
@@ -403,6 +421,150 @@ router.post(
       }
       return res.status(500).json({
         error: "An unexpected error occurred while structuring your notes. Please try again.",
+      });
+    }
+  }
+);
+
+// ─── POST /ai/chat (Interview Prep Chatbot) ──────────────────────────────────
+router.post(
+  "/chat",
+  requireApiAuth,
+  doubleCsrfProtection,
+  chatLimiter,
+  async (req, res) => {
+    const startTime = Date.now();
+    const userId    = req.user._id;
+
+    try {
+      // 1. Feature-flag check
+      const settings = await getSettings();
+      if (!settings.aiEnabled) {
+        await AiLog.create({
+          user:        userId,
+          action:      "ask",
+          inputLength: 0,
+          status:      "blocked",
+          latencyMs:   Date.now() - startTime,
+        });
+        return res.status(503).json({ error: "AI features are currently disabled." });
+      }
+
+      // 2. Input validation
+      const { question } = req.body;
+      if (typeof question !== "string" || question.trim().length < 5) {
+        return res.status(400).json({ error: "Please type a question (at least 5 characters)." });
+      }
+      if (question.length > 400) {
+        return res.status(400).json({ error: "Question must not exceed 400 characters." });
+      }
+
+      // 3. Shared daily limit (IST timezone, same counter as structure/tone)
+      const dailyLimit = settings.aiDailyUserLimit || 0;
+      if (dailyLimit > 0) {
+        const startOfDay  = getStartOfDayIST();
+        const todayCount  = await AiLog.countDocuments({
+          user:      userId,
+          status:    "success",
+          createdAt: { $gte: startOfDay },
+        });
+        if (todayCount >= dailyLimit) {
+          await AiLog.create({
+            user:        userId,
+            action:      "ask",
+            inputLength: question.length,
+            status:      "blocked",
+            latencyMs:   Date.now() - startTime,
+          });
+          return res.status(429).json({
+            error: `Daily AI usage limit of ${dailyLimit} requests reached. Try again tomorrow.`,
+          });
+        }
+      }
+
+      // 4. Call the service (retrieval + optional Groq call)
+      const { answer, sourceCount } = await answerChatQuestion(question.trim(), settings);
+      const latencyMs = Date.now() - startTime;
+
+      await AiLog.create({
+        user:        userId,
+        action:      "ask",
+        inputLength: question.length,
+        status:      "success",
+        latencyMs,
+      });
+
+      return res.json({ answer, sourceCount });
+
+    } catch (err) {
+      const latencyMs  = Date.now() - startTime;
+      const isModelErr = isModelNotFoundError(err);
+
+      if (isModelErr) {
+        console.error(`AI Chat Error [${err.name || "AIError"}]: status ${err.status || 404}`);
+        try {
+          await AiLog.create({
+            user:        userId,
+            action:      "ask",
+            inputLength: typeof req.body.question === "string" ? req.body.question.length : 0,
+            status:      "error",
+            errorCode:   "model_not_found",
+            latencyMs,
+          });
+        } catch (_) {}
+        return res.status(503).json({
+          error: "The AI model is currently unavailable. Please try again later.",
+        });
+      }
+
+      if (err.code === "OUTPUT_TRUNCATED") {
+        console.error("AI Chat Error [OUTPUT_TRUNCATED]: status 502");
+        try {
+          await AiLog.create({
+            user:        userId,
+            action:      "ask",
+            inputLength: typeof req.body.question === "string" ? req.body.question.length : 0,
+            status:      "error",
+            errorCode:   "truncated",
+            latencyMs,
+          });
+        } catch (_) {}
+        return res.status(502).json({
+          error: "AI output was cut off. Please ask a more specific question.",
+        });
+      }
+
+      if (err.code === "ETIMEDOUT") {
+        console.error("AI Chat Error [ETIMEDOUT]: status 503");
+        try {
+          await AiLog.create({
+            user:        userId,
+            action:      "ask",
+            inputLength: typeof req.body.question === "string" ? req.body.question.length : 0,
+            status:      "error",
+            errorCode:   "timeout",
+            latencyMs,
+          });
+        } catch (_) {}
+        return res.status(503).json({
+          error: "AI service timed out. Please try again later.",
+        });
+      }
+
+      const errStatus = err.status || err.statusCode || 500;
+      console.error(`AI Chat Error [${err.name || "Error"}]: status ${errStatus}`);
+      try {
+        await AiLog.create({
+          user:        userId,
+          action:      "ask",
+          inputLength: typeof req.body.question === "string" ? req.body.question.length : 0,
+          status:      "error",
+          errorCode:   "upstream",
+          latencyMs,
+        });
+      } catch (_) {}
+      return res.status(502).json({
+        error: "AI service is currently unavailable. Please try again later.",
       });
     }
   }
