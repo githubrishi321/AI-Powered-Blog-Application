@@ -1,0 +1,82 @@
+<%# Chat widget — included once in the experiences layout, just before </body> %>
+<%# Only shown when aiEnabled is true (checked by the including template).   %>
+
+<!-- Chat launcher button -->
+<button
+  id="cwLauncher"
+  type="button"
+  aria-label="Open interview prep chatbot"
+  aria-expanded="false"
+  aria-controls="cwPanel"
+>
+  <span class="cw-icon-open"  aria-hidden="true"><i class="fas fa-comments"></i></span>
+  <span class="cw-icon-close" aria-hidden="true"><i class="fas fa-times"></i></span>
+</button>
+
+<!-- Chat panel -->
+<div
+  id="cwPanel"
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="cwPanelTitle"
+  aria-describedby="cwPanelSubtitle"
+  data-user-id="<%= locals.user ? locals.user._id : '' %>"
+>
+  <!-- Header -->
+  <div id="cwHeader">
+    <div class="cw-header-icon" aria-hidden="true">
+      <i class="fas fa-graduation-cap"></i>
+    </div>
+    <div class="cw-header-text">
+      <div class="cw-header-title" id="cwPanelTitle">Interview Prep Assistant</div>
+      <div class="cw-header-subtitle" id="cwPanelSubtitle">
+        Answers from student experiences on this platform
+      </div>
+    </div>
+    <div class="cw-header-actions">
+      <button
+        id="cwClearBtn"
+        type="button"
+        title="Clear chat history"
+        aria-label="Clear chat history"
+      >
+        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+      </button>
+      <button
+        id="cwCloseBtn"
+        type="button"
+        aria-label="Close chatbot"
+      >
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Message list -->
+  <div id="cwMessages" role="log" aria-live="polite" aria-label="Chat messages">
+    <div class="cw-msg cw-msg-bot">
+      Hi! Ask me about any company's interview process — I'll search
+      experiences shared by students here and give you grounded prep advice.
+      Try: <em>"Preparing for TCS on-campus as a fresher"</em>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div id="cwInputArea">
+    <textarea
+      id="cwInput"
+      rows="1"
+      maxlength="400"
+      placeholder="Ask about a company, role or round type…"
+      aria-label="Your question"
+    ></textarea>
+    <button
+      id="cwSendBtn"
+      type="button"
+      aria-label="Send message"
+      disabled
+    >
+      <i class="fas fa-paper-plane" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>

@@ -128,6 +128,12 @@ const adminLimiter = rateLimit({
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 app.use(checkForAuthenticationCookie("token"));
 
+// Expose authenticated user to all EJS templates
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
+
 // ─── Static Files & Startup Safety ──────────────────────────────────────────
 const uploadsDir = path.join(__dirname, "public/uploads");
 const fs = require("fs");

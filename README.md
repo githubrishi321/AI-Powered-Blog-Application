@@ -77,14 +77,14 @@ Blogify integrates the official **Groq SDK** to run fast, deterministic inferenc
 
 ### Model & Configuration
 - **Active Model**: `openai/gpt-oss-120b` (configured in `Settings.aiModel`).
-- **Retired Model Transition Note**: Groq retired `llama-3.3-70b-versatile` for free and developer tiers in August 2026. Blogify defaults to `openai/gpt-oss-120b`, and its service layer automatically maps any stored `llama-3.3-70b-versatile` references to `openai/gpt-oss-120b` at runtime without crashing.
-- **Temperature & Token Limits**: Temperature is set to `0.1` for deterministic note structuring (up to 2048 max output tokens) and `0.3` for tone conversion (up to 1024 max output tokens).
+- **Retired Model Transition Note**: Groq retired `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` for free and developer tiers. Blogify defaults to `openai/gpt-oss-120b`, and its service layer automatically maps retired model references (`llama-3.3-70b-versatile` → `openai/gpt-oss-120b`, `llama-3.1-8b-instant` → `openai/gpt-oss-20b`) at runtime without crashing.
+- **Temperature & Token Limits**: Temperature is set to `0.1` for deterministic note structuring (up to 3000 max output tokens). Tone conversion uses `reasoning_effort: "low"` with up to 2000 max output tokens.
 - **Inference Mode**: Note structuring requests enforce strict JSON output via Groq's `{ type: "json_object" }` response format.
 
 ### The "Structure My Notes" Workflow
 1. **Client Submission**: The candidate pastes raw interview notes into the structuring panel on `/experiences/new`.
 2. **Contact Redaction**: Before sending text to Groq, candidate contact info (emails, phone numbers, personal URLs) is redacted into `[REDACTED]` markers using regex heuristics.
-3. **Prompt Delimiters**: Raw user notes are isolated within distinct XML/triple-backtick delimiter fences to prevent prompt injection instructions from overriding system guidelines.
+3. **Prompt Delimiters**: Raw user notes are isolated within `NOTES_START` / `NOTES_END` delimiter markers to prevent prompt injection instructions from overriding system guidelines. Any occurrence of these tokens within the user's own text is stripped before wrapping.
 4. **Structured Inference**: Groq processes the notes with a system prompt mandating JSON schema output adhering strictly to verifiable facts.
 5. **Whitelist Parsing & Sanitization**: The application validates and sanitizes the returned JSON via `parseAndSanitizeStructuredOutput`:
    - Strips dangerous or unauthorized injected keys (`status`, `verified`, `anonymous`, `createdBy`, `title`, `story`).
@@ -95,7 +95,7 @@ Blogify integrates the official **Groq SDK** to run fast, deterministic inferenc
    | **Outcome** | Requires an exact quoted phrase from the raw notes stored in `outcomeEvidence`. If the phrase does not appear verbatim, outcome resets to `null`. |
    | **Company, Role, Year** | Must appear directly in the raw notes text; otherwise discarded. |
    | **Difficulty** | **Never filled by AI**. Left blank for mandatory manual selection by the student. |
-   | **Numeric Bounds** | Round numbers and years must fall within valid bounds (e.g. 2020–current year). Out-of-range numbers are cleared, **never clamped**. |
+   | **Numeric Bounds** | Round numbers and years must fall within valid bounds (e.g. 2015–current year). Out-of-range numbers are cleared, **never clamped**. |
    | **Contact Details** | Any string field containing detected contact info (phone/email/link) is automatically discarded. |
 7. **Human Review**: Form fields are populated in the candidate's browser. Missing or ungrounded fields are flagged (*"AI could not find these in your notes..."*), and the candidate must manually confirm all fields before submitting.
 8. **Stored Metadata**: The application logs telemetry in `AiLog` (user ID, feature, model, execution time in ms, character counts, status). **Raw student notes and prompt text are never saved to the database.**
@@ -107,17 +107,18 @@ Blogify integrates the official **Groq SDK** to run fast, deterministic inferenc
 Blogify implements defense-in-depth across the entire stack:
 
 ### Verified Security Controls
-- **Helmet Security Headers**: Configured Content Security Policy (CSP) blocking unauthorized external sources and defaulting inline script protections.
+- **Helmet Security Headers**: Configured Content Security Policy (CSP) allowing self-hosted and CDN-sourced scripts and styles. Inline scripts are currently permitted (`'unsafe-inline'`) to support existing view event handlers.
 - **Double-Submit CSRF Defense (`csrf-csrf`)**: Generates CSRF tokens verified on all state-changing `POST` routes via the `x-csrf-token` header or form body.
 - **Multi-Tier Rate Limiting**:
   - `signinLimiter`: Restricts failed logins to 10 requests per 15 minutes per IP.
   - `adminLimiter`: Restricts administrative operations to 120 requests per minute per IP.
   - `reportLimiter`: Limits report submissions to 10 reports per hour per user/IP.
-  - `aiLimiter`: Daily quotas per user (default: 10 structure requests/day, 20 tone requests/day) evaluated in Indian Standard Time (IST).
+  - `structureLimiter`: Limits Structure My Notes requests to 6 per 10 minutes per user.
+  - `aiDailyUserLimit`: Configurable per-user daily quota (default: `0` = unlimited) shared across all AI features, evaluated in Indian Standard Time (IST).
 - **Brute-Force Account Lockout**: Accounts lock automatically after 5 consecutive failed attempts (`MAX_LOGIN_ATTEMPTS`) for 15 minutes (`LOCK_DURATION_MINUTES`).
 - **Sanitized Login Activity**: Authentication attempts are recorded with timestamp, IP, and user-agent. **Mistyped passwords are never stored**; invalid usernames are flagged as `[invalid format]`.
 - **Role Validation Against Database**: `requireAdmin` queries MongoDB directly on every request to verify `role === "ADMIN"` and `status === "active"`. The role claims in JWT cookies are never trusted on their own.
-- **Instant Session Invalidation**: User records maintain a `passwordChangedAt` timestamp. Resetting passwords or forcing logouts invalidates active JWT tokens immediately.
+- **Instant Session Invalidation**: User records maintain a `tokenVersion` counter. Resetting passwords or forcing logouts increments `tokenVersion`, immediately invalidating all existing JWT tokens for that account.
 - **Unified Public Anonymity Helper**: Public views access author details exclusively through `getPublicAuthor(blog)`. When `blog.experience.anonymous === true`, author name, email, avatar, and ID are omitted from public responses.
 - **Input Sanitization & Output Escaping**: All user-generated text is HTML-escaped through EJS `<%= %>` tags, and multi-line content preserves formatting via CSS `pre-wrap-text`.
 
@@ -282,6 +283,7 @@ The Admin Panel (`/admin`) provides comprehensive platform control:
 - **Company Directory (`/admin/companies`)**: Rename companies, update slugs with automatic redirect creation, manage aliases, and safely merge duplicate organizations.
 - **AI Governance (`/admin/ai`)**: Configure the active AI model name (`openai/gpt-oss-120b`), adjust temperature, update system prompts, set daily per-user usage limits, and inspect telemetry logs.
 - **User Management (`/admin/users`)**: Search accounts, assign administrative privileges, unlock locked accounts, or perform safe password resets.
+- **Site Settings (`/admin/settings`)**: Configure site-wide options including registration open/close, maintenance mode, upload size limits, and default user roles.
 - **Audit Log (`/admin/audit-log`)**: Immutable, read-only system trail recording administrative write operations.
 
 > **Password Security Note**: Administrators can trigger a one-time password reset for users, but **can never view existing passwords**. The temporary password is generated, hashed with salt, and displayed to the administrator exactly once.
@@ -411,9 +413,16 @@ Blog-Application/
 │   ├── blog.ejs                    # Blog article reader view
 │   ├── error.ejs                   # Standardized error presentation view
 │   ├── home.ejs                    # Public landing page with featured content
+│   ├── signin.ejs                  # User sign-in form view
+│   ├── signup.ejs                  # User registration form view
 │   ├── admin/                      # Admin panel template suite
 │   ├── company/                    # Company directory and profile views
 │   ├── experiences/                # Interview experience browsing, detail, and form views
+│   │   ├── detail.ejs              # Experience detail reader view
+│   │   ├── edit.ejs                # Experience editing form
+│   │   ├── index.ejs               # Experience directory and filter view
+│   │   ├── mine.ejs                # Author's personal experience listing
+│   │   └── new.ejs                 # New experience submission form (with AI structuring panel)
 │   └── partials/                   # Reusable UI partials (nav, head, footer, flash)
 │
 └── public/                         # Public static assets (CSS, client JS, images)
@@ -488,7 +497,7 @@ The repository includes a synthetic test dataset (`data/structure-eval.json`) wi
 | **`generateCsrfToken is not a function` or invalid token** | Version API mismatch in CSRF middleware | Use `generateToken` destructured from `doubleCsrf` matching `csrf-csrf` v3. |
 | **Admin page unstyled / CSS 404** | Relative asset paths in nested admin templates | Reference assets using root-relative paths: `<link rel="stylesheet" href="/css/admin.css">`. |
 | **`ReferenceError: <variable> is not defined` in EJS** | Controller omitted expected variable in `res.render()` | Pass safe defaults from the controller or guard with `locals.variableName`. |
-| **Inline scripts or `onclick` blocked** | Helmet CSP directive `script-src-attr 'none'` active | Move client behavior to external JavaScript files in `/public/js/` loaded with `defer`. |
+| **Inline scripts or `onclick` need to be in external files** | Best practice for CSP hardening even though `'unsafe-inline'` is currently permitted | Move client behavior to external JavaScript files in `/public/js/` loaded with `defer` to prepare for future `script-src-attr 'none'` tightening. |
 | **Broken cover images after redeployment** | Ephemeral container storage erased local upload | Configure Cloudinary credentials in `.env` to store images persistently in the cloud. |
 | **AI returns 404 `model_not_found` or unavailable** | Target model was decommissioned or retired by provider | Visit `/admin/ai` and update `Settings.aiModel` to an active model (e.g. `openai/gpt-oss-120b`). |
 | **Cannot sign in after multiple attempts** | Account locked by brute-force defense | Wait 15 minutes for lockout expiry or have an admin unlock the account from `/admin/users/:id`. |
